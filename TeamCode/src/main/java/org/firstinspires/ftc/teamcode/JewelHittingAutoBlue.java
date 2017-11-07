@@ -13,6 +13,8 @@ public class JewelHittingAutoBlue extends AutoOpMode {
         telemetry.addData("Blue", "Ready");
         waitForStart();
         setAlliance('b');
+        String cryptoKey = scanImage();
+        sleep (5000);
         lowerJewel();
         sleep(2500);
         hitJewel();
