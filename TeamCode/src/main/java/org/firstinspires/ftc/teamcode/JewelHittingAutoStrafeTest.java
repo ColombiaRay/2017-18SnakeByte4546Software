@@ -8,6 +8,10 @@ import java.util.Date;
  * Created by sopa on 10/25/17.
  */
 @Autonomous (name = "This here is for the strafe encoder test")
+/**
+ *  This program Strafes for 5 seconds to the right from the robot's perspective
+ *  after it completes, we can then measure the increments per inch
+ */
 public class JewelHittingAutoStrafeTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
