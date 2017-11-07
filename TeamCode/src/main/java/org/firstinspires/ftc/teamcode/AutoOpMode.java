@@ -72,9 +72,9 @@ public abstract class AutoOpMode extends LinearOpMode {
         leftLiftSlide = hardwareMap.dcMotor.get("LSlide");
         rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
         liftMani = hardwareMap.dcMotor.get("liftMani");
+        */
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
-        */
         //gyro init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -341,7 +341,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
     */
 
-    public String scanImage() throws InterruptedException {
+    public void scanImage() throws InterruptedException {
         VuforiaLocalizer vuforia;
         //Camera Set Up
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -362,23 +362,22 @@ public abstract class AutoOpMode extends LinearOpMode {
                 if (vuMark == RelicRecoveryVuMark.LEFT){
                     telemetry.addData("VuMark","Left");
                     telemetry.update();
-                    return "left";
+                    cryptoboxKey = "left";
                 }
                 else if (vuMark == RelicRecoveryVuMark.CENTER){
                     telemetry.addData("VuMark","Center");
                     telemetry.update();
-                    return "center";
+                    cryptoboxKey = "center";
                 }
                 if (vuMark == RelicRecoveryVuMark.RIGHT){
                     telemetry.addData("VuMark","Right");
                     telemetry.update();
-                    return "right";
+                    cryptoboxKey = "right";
                 }
             }
         }
         telemetry.addData("VuMark","NotDetected");
         telemetry.update();
-        return "none";
     }
 
 
@@ -434,11 +433,24 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveStrafe(double strafe, int distance) throws InterruptedException{
         double startStrafe = getStrafeEncoders();
-        while(Math.abs(getStrafeEncoders() - startStrafe) < distance) {
+        while((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
             moveStrafe(strafe);
             idle();
         }
         setZero();
+    }
+
+    //Moves the robot the the correct column (values not tested)
+    public void moveKey() throws InterruptedException{
+        if (cryptoboxKey.equals("left")){
+            moveStrafe(0.5,600);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafe(0.5,400);
+        }
+        else {
+            moveStrafe(0.5, 200);
+        }
     }
 
 }
