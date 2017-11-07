@@ -61,7 +61,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         BL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftArm = hardwareMap.servo.get("LRelicArm");
+        /*leftArm = hardwareMap.servo.get("LRelicArm");
         rightArm = hardwareMap.servo.get("RRelicArm");
         leftRelic = hardwareMap.servo.get("LRelic");
         rightRelic = hardwareMap.servo.get("RRelic");
@@ -74,6 +74,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         liftMani = hardwareMap.dcMotor.get("liftMani");
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
+        */
         //gyro init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -411,6 +412,33 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         leftMani.setPosition(0.5);
         rightMani.setPosition(0.5);
+    }
+
+    public double getStrafeEncoders() {
+        int backLeftEncoderValue    = BL.getCurrentPosition();
+        int backRightEncoderValue   = BR.getCurrentPosition();
+        int frontRightEncoderValue  = FR.getCurrentPosition();
+        int frontLeftEncoderValue   = FL.getCurrentPosition();
+
+        double avgDiagPosition1 = (Math.abs(backLeftEncoderValue) + Math.abs(frontRightEncoderValue)) / 2.0;
+        //double avgDiagPosition2 = (Math.abs(backRightEncoderValue) + Math.abs(frontLeftEncoderValue)) / 2.0;
+
+
+        //return (avgDiagPosition1 + avgDiagPosition2) / 2.0;
+        return avgDiagPosition1;
+    }
+
+    public void moveStrafe(double strafe) throws InterruptedException{
+            setPower(0, 0, strafe);
+    }
+
+    public void moveStrafe(double strafe, int distance) throws InterruptedException{
+        double startStrafe = getStrafeEncoders();
+        while(Math.abs(getStrafeEncoders() - startStrafe) < distance) {
+            moveStrafe(strafe);
+            idle();
+        }
+        setZero();
     }
 
 }
