@@ -14,7 +14,7 @@ public class JewelHittingAutoRed extends AutoOpMode {
         waitForStart();
         setAlliance('r');
         lowerJewel();
-        sleep(2500);
+        sleep(2400);
         hitJewel();
         sleep(1000);
         moveForward(-0.2, 1500);
