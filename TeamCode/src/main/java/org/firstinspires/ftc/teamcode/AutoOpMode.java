@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+//import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
@@ -42,6 +42,9 @@ public abstract class AutoOpMode extends LinearOpMode {
     ColorSensor colorFront;
     ColorSensor colorBack;
     int recCount = 0;
+    int cameraMonitorViewId;
+    VuforiaTrackables relicTrackables;
+    VuforiaTrackable relicTemplate;
     String cryptoboxKey;
     VuforiaLocalizer.Parameters parameters;
     char alliance;
@@ -91,6 +94,20 @@ public abstract class AutoOpMode extends LinearOpMode {
         colorBack.enableLed(true);
     }
 
+    public void prepareVuforia() throws InterruptedException{
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        //key
+        parameters.vuforiaLicenseKey = "AQ1iIdT/////AAAAGZ0U6OKRfU8tpKf9LKl/7DM85y3Wp791rb6q3WwHfYaY53vqKSjAO8wU2FgulWnDt6gLqu9hB33z1reejMz/NyfL8u11QZlMIbimmnP/v4hvoXZWu0p62V9eMG3R2PQ3Z7rZ0qK8HwsQYE/0jmBhTy0D17M4fWpNW64QQnMJqFxq/N1BXm32PEInYDHBYs7WUrHL5oa9xeSSurxUq/TqDpeJwQM+1/GYppdAqzbcM1gi3yzU7JDLdNtOZ6+lbi5uXlU++GnFvQaEXL9uVcnTwMEgBhBng6oOEVoEDXiSUBuZHuMRGZmHfVXSNE3m1UXWyEdPTlMRI5vfEwfsBHmQTmvYr/jJjng3+tBpu85Q1ivo";
+        //using front camera so it's easier to use the phone during competition
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        //init
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+        relicTrackables.activate();
+    }
 
     public void setPower(double velocity, double rotation, double strafe) throws InterruptedException {
         FL.setPower(velocity - rotation + strafe);
@@ -191,6 +208,27 @@ public abstract class AutoOpMode extends LinearOpMode {
             }
         }
         return "broken";
+    }
+
+    public double getStrafeEncoders() {
+        int backLeftEncoderValue    = BL.getCurrentPosition();
+        int backRightEncoderValue   = BR.getCurrentPosition();
+        int frontRightEncoderValue  = FR.getCurrentPosition();
+        int frontLeftEncoderValue   = FL.getCurrentPosition();
+
+        double avgDiagPosition1 = (Math.abs(backLeftEncoderValue) + Math.abs(frontRightEncoderValue)) / 2.0;
+        double avgDiagPosition2 = (Math.abs(backRightEncoderValue) + Math.abs(frontLeftEncoderValue)) / 2.0;
+
+
+        return (avgDiagPosition1 + avgDiagPosition2) / 2.0;
+    }
+
+    public void strafeLeft (int distanceInInches) {
+        throw new UnsupportedOperationException("Not Working yet :/");
+    }
+
+    public void strafeRight (int distanceInInches) {
+        throw new UnsupportedOperationException("Not Working yet :/");
     }
 
     public String chooseColor(char c) throws InterruptedException {
@@ -311,9 +349,9 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
     }
 
-    /*public void scanImage() throws InterruptedException
+    public void scanImage() throws InterruptedException
     {
-
+        /*
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
         if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
             if (vuMark == RelicRecoveryVuMark.LEFT){
@@ -331,55 +369,14 @@ public abstract class AutoOpMode extends LinearOpMode {
                 telemetry.update();
                 cryptoboxKey = "right";
             }
+
         }
         else {
             telemetry.addData("Key", "unknown");
             telemetry.update();
         }
-
+        */
     }
-    */
-
-    public String scanImage() throws InterruptedException {
-        VuforiaLocalizer vuforia;
-        //Camera Set Up
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-        //Key
-        parameters.vuforiaLicenseKey = "AQ1iIdT/////AAAAGZ0U6OKRfU8tpKf9LKl/7DM85y3Wp791rb6q3WwHfYaY53vqKSjAO8wU2FgulWnDt6gLqu9hB33z1reejMz/NyfL8u11QZlMIbimmnP/v4hvoXZWu0p62V9eMG3R2PQ3Z7rZ0qK8HwsQYE/0jmBhTy0D17M4fWpNW64QQnMJqFxq/N1BXm32PEInYDHBYs7WUrHL5oa9xeSSurxUq/TqDpeJwQM+1/GYppdAqzbcM1gi3yzU7JDLdNtOZ6+lbi5uXlU++GnFvQaEXL9uVcnTwMEgBhBng6oOEVoEDXiSUBuZHuMRGZmHfVXSNE3m1UXWyEdPTlMRI5vfEwfsBHmQTmvYr/jJjng3+tBpu85Q1ivo";
-        //Use Front Camera
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
-        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-        VuforiaTrackable relicTemplate = relicTrackables.get(0);
-        relicTemplate.setName("relicVuMarkTemplate");
-        relicTrackables.activate();
-        long scanTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - scanTime < 2000){
-            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
-            if (vuMark != RelicRecoveryVuMark.UNKNOWN){
-                if (vuMark == RelicRecoveryVuMark.LEFT){
-                    telemetry.addData("VuMark","Left");
-                    telemetry.update();
-                    return "left";
-                }
-                else if (vuMark == RelicRecoveryVuMark.CENTER){
-                    telemetry.addData("VuMark","Center");
-                    telemetry.update();
-                    return "center";
-                }
-                if (vuMark == RelicRecoveryVuMark.RIGHT){
-                    telemetry.addData("VuMark","Right");
-                    telemetry.update();
-                    return "right";
-                }
-            }
-        }
-        telemetry.addData("VuMark","NotDetected");
-        telemetry.update();
-        return "none";
-    }
-
 
     public void moveToDropBlock(String place) throws InterruptedException {
         scanImage();
@@ -414,3 +411,5 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
 }
+
+
