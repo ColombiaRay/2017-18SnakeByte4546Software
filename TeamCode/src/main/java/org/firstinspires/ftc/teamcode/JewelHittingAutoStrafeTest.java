@@ -24,10 +24,10 @@ public class JewelHittingAutoStrafeTest extends AutoOpMode {
         initialTime = (int)(System.currentTimeMillis());
         telemetry.addData("Starting Strafe Encoder Value : ", "" + startEnc);
         waitForStart();
-        while ((int) (System.currentTimeMillis()) <= initialTime + 5000) {
+        while ((int) (System.currentTimeMillis()) <= initialTime + 1500) {
             enc = getStrafeEncoders();
             telemetry.addData("Strafe Encoder Value : ", "" + enc);
-            moveAtAngle(.5,90);
+            moveAtAngle(.25,90);
 
 
         }
