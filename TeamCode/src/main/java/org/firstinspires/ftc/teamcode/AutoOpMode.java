@@ -231,6 +231,19 @@ public abstract class AutoOpMode extends LinearOpMode {
         throw new UnsupportedOperationException("Not Working yet :/");
     }
 
+    public void moveStrafe(double strafe) throws InterruptedException{
+        setPower(0, 0, strafe);
+    }
+
+    public void moveStrafe(double strafe, int distance) throws InterruptedException{
+        double startStrafe = getStrafeEncoders();
+        while((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
+            moveStrafe(strafe);
+            idle();
+        }
+        setZero();
+    }
+
     public String chooseColor(char c) throws InterruptedException {
         //hitting blue
         if(c == 114) {
