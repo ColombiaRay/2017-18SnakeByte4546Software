@@ -15,9 +15,17 @@ public class JewelHittingAutoRed extends AutoOpMode {
         setAlliance('r');
         lowerJewel();
         sleep(2400);
+        grabGlyph();
         hitJewel();
         sleep(1000);
         moveForward(-0.2, 1500);
         sleep(2000);
+        //strafe to column and enter glyph
+        moveKey();
+        releaseGlyph();
+        moveForward(.2, 1500);
+        //values not tested
+
+
     }
 }
