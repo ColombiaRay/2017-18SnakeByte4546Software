@@ -281,6 +281,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startPos = getAvgEncoder();
         while((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
             moveForward(velocity);
+            telemetry.addData("distance", getAvgEncoder() - startPos);
+            telemetry.update();
             idle();
         }
         setZero();
@@ -437,10 +439,13 @@ public abstract class AutoOpMode extends LinearOpMode {
             setPower(0, 0, strafe);
     }
 
+
     public void moveStrafe(double strafe, int distance) throws InterruptedException{
         double startStrafe = getStrafeEncoders();
         while((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
             moveStrafe(strafe);
+            telemetry.addData("distance",getStrafeEncoders() - startStrafe);
+            telemetry.update();
             idle();
         }
         setZero();

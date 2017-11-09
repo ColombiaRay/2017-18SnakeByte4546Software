@@ -18,7 +18,7 @@ public class JewelHittingAutoRed extends AutoOpMode {
         sleep(2400);
         hitJewel();
         sleep(1000);
-        moveForward(-0.2, 800);
+        moveForward(-0.25, 800);
         sleep(2000);
         moveStrafe(-0.25,300);
         setZero();
