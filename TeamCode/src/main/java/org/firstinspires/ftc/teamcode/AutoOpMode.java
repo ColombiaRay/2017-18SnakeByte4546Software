@@ -141,7 +141,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void lowerJewel() throws InterruptedException {
-        jewelHitter.setPosition(0.57);
+        jewelHitter.setPosition(0.54);
     }
 
     public void raiseJewel() throws InterruptedException
@@ -279,7 +279,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveForward(double velocity, int distance) throws InterruptedException{
         int startPos = getAvgEncoder();
-        while(Math.abs(getAvgEncoder() - startPos) < distance) {
+        while((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
             moveForward(velocity);
             idle();
         }
