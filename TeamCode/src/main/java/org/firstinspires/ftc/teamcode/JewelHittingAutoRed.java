@@ -18,6 +18,7 @@ public class JewelHittingAutoRed extends AutoOpMode {
         sleep(2400);
         hitJewel();
         sleep(1000);
+        //Forward probably needs to be less, strafe perhaps more? GJ if you read this
         moveForward(-0.25, 800);
         sleep(2000);
         moveStrafe(-0.25,300);
