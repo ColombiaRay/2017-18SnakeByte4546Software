@@ -13,11 +13,17 @@ public class JewelHittingAutoRed extends AutoOpMode {
         telemetry.addData("Red", "Ready");
         waitForStart();
         setAlliance('r');
+        //grabGlyph();
         lowerJewel();
-        sleep(2500);
+        sleep(2400);
         hitJewel();
         sleep(1000);
         moveForward(-0.2, 1500);
         sleep(2000);
+        moveStrafe(-0.25,300);
+        setZero();
+        //releaseGlyph();
+        sleep(1000);
+        moveForward(-0.3,100);
     }
 }

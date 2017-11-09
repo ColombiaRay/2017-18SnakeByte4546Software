@@ -157,11 +157,11 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void lowerJewel() throws InterruptedException {
-        jewelHitter.setPosition(0);
+        jewelHitter.setPosition(0.57);
     }
 
     public void raiseJewel() throws InterruptedException
-    {jewelHitter.setPosition(0.57);
+    {jewelHitter.setPosition(1);
     }
 
     public void setAlliance(char c) throws InterruptedException {
@@ -296,13 +296,18 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 
     public void hitJewel() throws InterruptedException {
-        if (choseOneColor(alliance).equals("forwards")) {
+       /*if (choseOneColor(alliance).equals("forwards")) {
             //park in safe zone
             moveForward(0.25, 200);
+            setZero();
+            moveForward(-0.25, 200);
         }
         else if (choseOneColor(alliance).equals("backwards")) {
             moveForward(-0.25, 200);
+            setZero();
+            moveForward(0.25, 200);
         }
+        */
         raiseJewel();
     }
 
