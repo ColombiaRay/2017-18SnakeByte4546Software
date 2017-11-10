@@ -38,7 +38,11 @@ public class HeadControlsTeleOp extends OpMode {
     private Servo leftRelic;
     private Servo rightRelic;
     private MattTunnel tunnel;
+    private Servo relicGrabber;
+    private Servo relicClamp;
     private final int DELAYTOGGLE = 500;
+    private boolean relicOut;
+    private boolean clampClosed;
 
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
@@ -72,10 +76,13 @@ public class HeadControlsTeleOp extends OpMode {
         inTake         = hardwareMap.dcMotor.get("intake");
         halfSpeed      = false;
         liftOut        = false;
+        relicOut       = false;
+        clampClosed    = false;
         rightMotion    = 0;
         leftMotion     = 0;
         tunnel         = new MattTunnel(liftLeft, liftRight, inTake);
-
+        relicGrabber   = hardwareMap.servo.get("relicGrabber");
+        relicClamp     = hardwareMap.servo.get("relicClamp");
         rightMani.setDirection(Servo.Direction.FORWARD);
         leftMani.setDirection(Servo.Direction.REVERSE);
         jewelHitter.setDirection(Servo.Direction.REVERSE);
@@ -208,6 +215,26 @@ public class HeadControlsTeleOp extends OpMode {
             rightLiftSlide.setPower(0);
             leftLiftSlide.setPower(0);
         }
+    }
+
+    public void useRelicGrabber() {
+        if (gamepad2.right_stick_y > 0.05){
+            relicGrabber.setPosition(1);
+            relicOut = true;
+        }
+        if (gamepad2.right_stick_y < -0.05){
+            relicGrabber.setPosition(0);
+            relicOut = false;
+        }
+        if ((gamepad2.right_stick_button) && (relicOut) && (!clampClosed)){
+            relicClamp.setPosition(1);
+            clampClosed = true;
+        }
+        if ((gamepad2.right_stick_button) && (relicOut) && (clampClosed)){
+            relicClamp.setPosition(1);
+            clampClosed = false;
+        }
+
     }
 
     //clamp for glyphs
