@@ -34,15 +34,26 @@ public class MattTunnel {
         }
     }
 
-    public void setBlocks() {
-        throw new UnsupportedOperationException("Doesn't Work yet");
+    public void setBlocks(boolean isKeyPressed) {
+        if(isKeyPressed) {
+            throw new UnsupportedOperationException("Doesn't Work yet");
+        }
     }
 
-    public void raiseLift() {
-        throw new UnsupportedOperationException("Doesn't Work yet");
+    public void manipulateLift(double joyStick) {
+        if (joyStick < 0) {
+            lowerLift(joyStick);
+        }
+        else if (joyStick != 0) {
+            raiseLift(joyStick);
+        }
     }
 
-    public void lowerLift() {
+    public void raiseLift(double joy) {
+            throw new UnsupportedOperationException("Doesn't Work yet");
+    }
+
+    public void lowerLift(double joy) {
         throw new UnsupportedOperationException("Doesn't Work yet");
     }
 
