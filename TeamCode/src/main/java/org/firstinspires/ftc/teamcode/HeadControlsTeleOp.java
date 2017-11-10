@@ -11,30 +11,35 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp (name = "HeadShouldersKneesAndToes", group = "TeleOp")
 public class HeadControlsTeleOp extends OpMode {
-    double rightMotion = 0;
-    double leftMotion = 0;
-    boolean halfSpeed = false;
-    final int delayToggle = 500;
-    DcMotor FL;
-    DcMotor FR;
-    DcMotor BL;
-    DcMotor BR;
-    DcMotor leftLiftSlide;
-    DcMotor rightLiftSlide;
-    DcMotor liftMani;
-    Servo leftMani;
-    Servo rightMani;
-    Servo jewelHitter;
-    boolean liftOut = false;
-    Servo leftArm;
-    Servo rightArm;
-    Servo leftRelic;
-    Servo rightRelic;
-    double leftRelicPosition;
-    double rightRelicPosition;
-    long currentTime;
-    long lastTime;
-    long closeTime;
+    private double rightMotion;
+    private double leftMotion;
+    private double leftRelicPosition;
+    private double rightRelicPosition;
+    private boolean halfSpeed;
+    private boolean liftOut;
+    private long currentTime;
+    private long lastTime;
+    private long closeTime;
+    private DcMotor FL;
+    private DcMotor FR;
+    private DcMotor BL;
+    private DcMotor BR;
+    private DcMotor leftLiftSlide;
+    private DcMotor rightLiftSlide;
+    private DcMotor liftMani;
+    private DcMotor liftLeft;
+    private DcMotor liftRight;
+    private DcMotor inTake;
+    private Servo leftMani;
+    private Servo rightMani;
+    private Servo jewelHitter;
+    private Servo leftArm;
+    private Servo rightArm;
+    private Servo leftRelic;
+    private Servo rightRelic;
+    private MattTunnel tunnel;
+    private final int DELAYTOGGLE = 500;
+
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
 
@@ -47,22 +52,32 @@ public class HeadControlsTeleOp extends OpMode {
         Expansion Hub 2: Motor 0 is LSlide, Motor 1 is liftMani, Motor 2 is RSlide
         Expansion Hub 2: Servo 0 is JewelHitter
         */
-        FL = hardwareMap.dcMotor.get("FL");
-        FR = hardwareMap.dcMotor.get("FR");
-        BR = hardwareMap.dcMotor.get("BR");
-        BL = hardwareMap.dcMotor.get("BL");
-        leftArm = hardwareMap.servo.get("LRelicArm");
-        rightArm = hardwareMap.servo.get("RRelicArm");
-        leftRelic = hardwareMap.servo.get("LRelic");
-        rightRelic = hardwareMap.servo.get("RRelic");
-        leftMani = hardwareMap.servo.get("LMani");
-        rightMani = hardwareMap.servo.get("RMani");
+
+        FL             = hardwareMap.dcMotor.get("FL");
+        FR             = hardwareMap.dcMotor.get("FR");
+        BR             = hardwareMap.dcMotor.get("BR");
+        BL             = hardwareMap.dcMotor.get("BL");
+        leftArm        = hardwareMap.servo.get("LRelicArm");
+        rightArm       = hardwareMap.servo.get("RRelicArm");
+        leftRelic      = hardwareMap.servo.get("LRelic");
+        rightRelic     = hardwareMap.servo.get("RRelic");
+        leftMani       = hardwareMap.servo.get("LMani");
+        rightMani      = hardwareMap.servo.get("RMani");
+        leftLiftSlide  = hardwareMap.dcMotor.get("LSlide");
+        rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
+        liftMani       = hardwareMap.dcMotor.get("liftMani");
+        jewelHitter    = hardwareMap.servo.get("jewelhitter");
+        liftLeft       = hardwareMap.dcMotor.get("leftLift");
+        liftRight      = hardwareMap.dcMotor.get("rightLift");
+        inTake         = hardwareMap.dcMotor.get("intake");
+        halfSpeed      = false;
+        liftOut        = false;
+        rightMotion    = 0;
+        leftMotion     = 0;
+        tunnel         = new MattTunnel(liftLeft, liftRight, inTake);
+
         rightMani.setDirection(Servo.Direction.FORWARD);
         leftMani.setDirection(Servo.Direction.REVERSE);
-        leftLiftSlide = hardwareMap.dcMotor.get("LSlide");
-        rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
-        liftMani = hardwareMap.dcMotor.get("liftMani");
-        jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
         telemetry.addData("Initialization", "done");
         telemetry.update();
@@ -79,6 +94,10 @@ public class HeadControlsTeleOp extends OpMode {
         //grapRelic();
         pickRelic();
         useJewel();
+        tunnel.toggleInTake(gamepad2.right_bumper);
+        tunnel.raiseLift();// TODO: add gamepad contols for these methods
+        tunnel.setBlocks();
+        tunnel.lowerLift();
         //jewelHitter.setPosition(0.54);
         //telemetry.addData("JewelHitter", jewelHitter.getPosition());
     }
@@ -118,7 +137,7 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void toggleHalfSpeed() {
         currentTime = System.currentTimeMillis();
-        if (gamepad1.x && (currentTime - lastTime) < delayToggle) {
+        if (gamepad1.x && (currentTime - lastTime) < DELAYTOGGLE) {
             if (halfSpeed) {
                 halfSpeed = false;
                 telemetry.addData("halfspeed", "disabled");
