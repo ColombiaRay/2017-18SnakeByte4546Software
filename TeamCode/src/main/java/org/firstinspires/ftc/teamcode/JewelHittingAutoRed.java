@@ -13,19 +13,18 @@ public class JewelHittingAutoRed extends AutoOpMode {
         telemetry.addData("Red", "Ready");
         waitForStart();
         setAlliance('r');
+        //grabGlyph();
         lowerJewel();
         sleep(2400);
-        grabGlyph();
         hitJewel();
         sleep(1000);
-        moveForward(-0.2, 1500);
+        //Forward probably needs to be less, strafe perhaps more? GJ if you read this
+        moveForward(-0.25, 250);
         sleep(2000);
-        //strafe to column and enter glyph
-        moveKey();
-        releaseGlyph();
-        moveForward(.2, 1500);
-        //values not tested
-
-
+        moveStrafe(-0.5,300);
+        setZero();
+        //releaseGlyph();
+        sleep(1000);
+        moveForward(-0.3,100);
     }
 }

@@ -141,11 +141,12 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void lowerJewel() throws InterruptedException {
-        jewelHitter.setPosition(0);
+        jewelHitter.setPosition(0.54);
     }
 
     public void raiseJewel() throws InterruptedException
-    {jewelHitter.setPosition(0.57);
+    {
+        jewelHitter.setPosition(1);
     }
 
     public void setAlliance(char c) throws InterruptedException {
@@ -246,13 +247,18 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 
     public void hitJewel() throws InterruptedException {
-        if (choseOneColor(alliance).equals("forwards")) {
+        /*if (choseOneColor(alliance).equals("forwards")) {
             //park in safe zone
             moveForward(0.25, 200);
+            setZero();
+            moveForward(-0.25, 200);
         }
         else if (choseOneColor(alliance).equals("backwards")) {
             moveForward(-0.25, 200);
+            setZero();
+            moveForward(0.25, 200);
         }
+        */
         raiseJewel();
     }
 
@@ -273,8 +279,10 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveForward(double velocity, int distance) throws InterruptedException{
         int startPos = getAvgEncoder();
-        while(Math.abs(getAvgEncoder() - startPos) < distance) {
+        while((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
             moveForward(velocity);
+            telemetry.addData("distance", getAvgEncoder() - startPos);
+            telemetry.update();
             idle();
         }
         setZero();
@@ -431,10 +439,13 @@ public abstract class AutoOpMode extends LinearOpMode {
             setPower(0, 0, strafe);
     }
 
+
     public void moveStrafe(double strafe, int distance) throws InterruptedException{
         double startStrafe = getStrafeEncoders();
         while((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
             moveStrafe(strafe);
+            telemetry.addData("distance",getStrafeEncoders() - startStrafe);
+            telemetry.update();
             idle();
         }
         setZero();

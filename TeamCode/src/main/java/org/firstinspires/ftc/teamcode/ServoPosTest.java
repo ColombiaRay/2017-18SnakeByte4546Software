@@ -10,10 +10,11 @@ public class ServoPosTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        jewelHitter.setPosition(0);
-        sleep(4000);
-        jewelHitter.setPosition(0.5);
+        telemetry.addData("initalize","done");
+        telemetry.update();
+        jewelHitter.setPosition(0.57);
         sleep(4000);
         jewelHitter.setPosition(1);
+        sleep(4000);
     }
 }
