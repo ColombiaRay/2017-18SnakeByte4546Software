@@ -17,10 +17,17 @@ public class MattTunnel {
     private Servo   backLeftTunnel;
 
 
-    public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT) {
-        liftLeft     = ll;
-        liftRight    = rl;
-        inTake       = iT;
+    public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT, Servo fRT, Servo bRT, Servo fLT, Servo blT) {
+        liftLeft         = ll;
+        liftRight        = rl;
+        inTake           = iT;
+        frontRightTunnel = fRT;
+        backRightTunnel  = bRT;
+        frontLeftTunnel  = fLT;
+        backLeftTunnel   = blT;
+
+        
+
 
     }
 
