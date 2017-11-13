@@ -14,5 +14,6 @@ public class ColorTest extends AutoOpMode {
         moveForward(0.5, 500);
         grabGlyph();
 
+
     }
 }

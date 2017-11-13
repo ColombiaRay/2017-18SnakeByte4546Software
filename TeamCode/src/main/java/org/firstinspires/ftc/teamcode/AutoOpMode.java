@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -46,6 +50,21 @@ public abstract class AutoOpMode extends LinearOpMode {
     VuforiaLocalizer.Parameters parameters;
     char alliance;
     long closeTime;
+    private double currentTime;
+    private double pastTime;
+    private double integral;
+    private double error;
+    private double previousError;
+    private double deltaT;
+    private double deltaError;
+    private int startPos;
+    private double startAngle;
+    private double angDisplacement;
+    private int displacement;
+    private double kP;
+    private double kI;
+    private double kD;
+    private double PIDPower;
 
 
     public void initialize() throws InterruptedException {
@@ -151,6 +170,23 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void setAlliance(char c) throws InterruptedException {
         alliance = c;
+        //I think this part sets the driver station color to alliance color
+        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        if (alliance == 114){
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.RED);
+                }
+            });
+        }
+        else if (alliance == 114){
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.BLUE);
+                }
+            });
+        }
     }
 
     public String choseOneColor(char c) throws InterruptedException {
@@ -269,6 +305,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         setPower(velocity, 0, 0);
     }
 
+    public void moveBackward(double velocity) throws InterruptedException {
+        setPower(-velocity, 0, 0);
+    }
+
     public void moveAtAngle(double velocity, double angle) throws InterruptedException{
         setPower(velocity, 0, calculateStrafe(velocity, angle));
     }
@@ -292,15 +332,31 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public void moveBackward(double velocity, int distance) throws InterruptedException{
+        int startPos = getAvgEncoder();
+        while((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
+            moveBackward(velocity);
+            telemetry.addData("distance", getAvgEncoder() - startPos);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+        if (Math.abs(getAvgEncoder() - startPos) > distance + 50){
+            telemetry.addData("overshoot", "fix");
+            telemetry.update();
+        }
+    }
+
     public void turn(double rotation, double angle) throws InterruptedException{
         double first = getGyroYaw();
-        while (Math.abs(getGyroYaw() - first) < angle){
+        while ((Math.abs(getGyroYaw() - first) < angle) && (opModeIsActive())){
             turn(rotation);
             idle();
         }
         setZero();
     }
 
+    /*
     public void turnPID(double angle) throws InterruptedException {
         double p = 0.005;
         double i = 0.00001;
@@ -319,6 +375,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         setZero();
     }
+    */
 
     /*public void scanImage() throws InterruptedException
     {
@@ -463,5 +520,154 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(0.5, 200);
         }
     }
+    //PID Stuff
 
+    public void setStartPos() throws InterruptedException {
+        startPos = getAvgEncoder();
+        findDisplacement();
+    }
+
+    public void setStartAngle() throws InterruptedException{
+        startAngle = getGyroYaw();
+
+    }
+
+    public void findDisplacement() throws InterruptedException {
+        displacement = Math.abs(getAvgEncoder() - startPos);
+        telemetry.addData("Displacement", displacement);
+    }
+
+    public void findAngDisplacement() throws InterruptedException{
+        angDisplacement = Math.abs(getGyroYaw() - startAngle);
+        telemetry.addData("Angular Displacement", angDisplacement);
+    }
+
+    public void setInitialError(int goalDistance){
+        error = goalDistance;
+    }
+
+    public void findError(int goalDistance) throws InterruptedException{
+        previousError = error;
+        error = Math.abs(goalDistance - displacement);
+    }
+
+    public void setInitialAngError(double goalAngle){
+        error = goalAngle;
+    }
+
+    public void findAngError(double goalAngle) throws InterruptedException{
+        previousError = error;
+        error = Math.abs(goalAngle - angDisplacement);
+    }
+
+    public void setKValues(double p, double i, double d){
+        kP = p;
+        kI = i;
+        kD = d;
+    }
+
+    public void getPercentTraveled(double goalDistance){
+        double percent = displacement / goalDistance * 100;
+        if (Math.abs(100 - percent) <= 5){
+            telemetry.addData("Success", percent + "% Accurate");
+        }
+        else if (displacement - 100 > 5){
+            telemetry.addData("Too Much", percent + "% Accurate");
+        }
+        else if (100 - displacement > 5){
+            telemetry.addData("Too Little", percent + "% Accurate");
+        }
+        telemetry.update();
+    }
+
+    //Proportion Stuff
+
+    public double getProportion(){
+        telemetry.addData("Proportion", kP * error);
+        return kP * error;
+    }
+
+    //Integral Stuff
+    public void findDeltaT(){
+        pastTime = currentTime;
+        currentTime = System.currentTimeMillis();
+        deltaT =  currentTime - pastTime;
+    }
+
+    public void resetIntegral(){
+        integral = 0;
+    }
+
+    public void tallyIntegral() {
+        integral += deltaT * error;
+    }
+
+    public double getIntegral(){
+        telemetry.addData("Current Integral", integral * kI);
+        return integral * kI;
+    }
+
+    //Derivative Stuff
+
+    public void findDeltaError(){
+        deltaError = error - previousError;
+    }
+
+    public double getDerivative(){
+        telemetry.addData("Current Derivative", kD * deltaError / deltaT);
+        return kD * deltaError / deltaT;
+    }
+
+    public void moveForwardPID(int distance) throws InterruptedException {
+        setStartPos();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015,2);
+        while (displacement < distance){
+            findDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            moveForward(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+        getPercentTraveled(distance);
+    }
+
+    public void moveBackwardPID(int distance) throws InterruptedException {
+        setStartPos();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015,2);
+        while (displacement < distance){
+            findDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            moveBackward(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+        getPercentTraveled(distance);
+    }
+
+    public void turnPID(double angle) throws InterruptedException{
+        setStartAngle();
+        resetIntegral();
+        setInitialAngError(angle);
+        setKValues(0.004, 0.000015, 2);
+        while (angDisplacement < angle){
+            findAngDisplacement();
+            findAngError(angle);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            turn(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+    }
 }
