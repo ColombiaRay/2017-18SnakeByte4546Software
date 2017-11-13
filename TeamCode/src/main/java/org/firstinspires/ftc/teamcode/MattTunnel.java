@@ -41,9 +41,19 @@ public class MattTunnel {
 
     public void setBlocks(boolean isKeyPressed) {
         if(isKeyPressed) {
-            frontLeftTunnel.;
+            frontLeftTunnel.setDirection(-1.0);
             backLeftTunnel.setDirection(-1.0);
+            frontRightTunnel.setDirection(1.0);
+            backRightTunnel.setDirection(1.0);
+        }
+    }
 
+    public void releaseBlocks(boolean isKeyPressed) {
+        if(isKeyPressed) {
+            frontLeftTunnel.setDirection(1.0);
+            backLeftTunnel.setDirection(1.0);
+            frontRightTunnel.setDirection(-1.0);
+            backRightTunnel.setDirection(-1.0);
         }
     }
 
