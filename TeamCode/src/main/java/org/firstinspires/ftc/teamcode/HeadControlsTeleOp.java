@@ -98,12 +98,13 @@ public class HeadControlsTeleOp extends OpMode {
         setLiftSlide();
         toggleHalfSpeed();
         raiseMani();
-        //grapRelic();
+        //grabRelic();
         pickRelic();
         useJewel();
         tunnel.toggleInTake(gamepad2.right_bumper);
         tunnel.manipulateLift(0.0);// TODO: add gamepad contols for these methods
         tunnel.setBlocks(false);
+        tunnel.releaseBlocks(false);
 
         //jewelHitter.setPosition(0.54);
         //telemetry.addData("JewelHitter", jewelHitter.getPosition());
