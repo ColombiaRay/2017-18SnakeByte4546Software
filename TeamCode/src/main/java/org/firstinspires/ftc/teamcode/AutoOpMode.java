@@ -180,7 +180,7 @@ public abstract class AutoOpMode extends LinearOpMode {
                 }
             });
         }
-        else if (alliance == 114){
+        else if (alliance == 98){
             relativeLayout.post(new Runnable() {
                 public void run() {
                     relativeLayout.setBackgroundColor(Color.BLUE);
