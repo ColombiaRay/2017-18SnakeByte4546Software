@@ -4,12 +4,17 @@ package org.firstinspires.ftc.teamcode;
  * Created by rubenr on 11/9/17.
  */
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 public class MattTunnel {
     private DcMotor liftLeft;
     private DcMotor liftRight;
     private DcMotor inTake;
+    private Servo   frontRightTunnel;
+    private Servo   backRightTunnel;
+    private Servo   frontLeftTunnel;
+    private Servo   backLeftTunnel;
 
 
     public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT) {
@@ -36,7 +41,9 @@ public class MattTunnel {
 
     public void setBlocks(boolean isKeyPressed) {
         if(isKeyPressed) {
-            throw new UnsupportedOperationException("Doesn't Work yet");
+            frontLeftTunnel.;
+            backLeftTunnel.setDirection(-1.0);
+
         }
     }
 
