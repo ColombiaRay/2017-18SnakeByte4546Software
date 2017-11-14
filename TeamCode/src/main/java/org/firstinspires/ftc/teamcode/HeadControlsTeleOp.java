@@ -76,8 +76,8 @@ public class HeadControlsTeleOp extends OpMode {
         liftRight      = hardwareMap.dcMotor.get("rightLift");
         inTake         = hardwareMap.dcMotor.get("intake");
         */
-        relicGrabber = hardwareMap.servo.get("relicGrabber");
-        relicArm = hardwareMap.servo.get("relicArm");
+        relicGrabber   = hardwareMap.servo.get("relicGrabber");
+        relicArm       = hardwareMap.servo.get("relicArm");
         halfSpeed      = false;
         liftOut        = false;
         relicOut       = false;
