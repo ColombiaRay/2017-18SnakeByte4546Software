@@ -50,6 +50,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     VuforiaLocalizer.Parameters parameters;
     char alliance;
     long closeTime;
+    Servo RelicGrabber;
     private double currentTime;
     private double pastTime;
     private double integral;
@@ -68,6 +69,8 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 
     public void initialize() throws InterruptedException {
+        RelicGrabber = hardwareMap.servo.get("RG");
+
         //FL is 0, BL is 1, FR is 2, BR is 3
         //Jewel is 0
         FL = hardwareMap.dcMotor.get("FL");
@@ -75,6 +78,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         BR = hardwareMap.dcMotor.get("BR");
         BL = hardwareMap.dcMotor.get("BL");
         FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -91,7 +96,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         leftLiftSlide = hardwareMap.dcMotor.get("LSlide");
         rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
         liftMani = hardwareMap.dcMotor.get("liftMani");
-        */
+
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
         //gyro init
@@ -109,6 +114,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         colorBack = hardwareMap.colorSensor.get("color2");
         //colorFront.enableLed(true);
         colorBack.enableLed(true);
+        */
+
     }
 
 
