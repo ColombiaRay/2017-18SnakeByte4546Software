@@ -46,6 +46,7 @@ public class MattTunnel {
         }
     }
 
+    /*
     public void setBlocks(boolean isKeyPressed) {
         if(isKeyPressed) {
             frontLeftTunnel.setDirection(-1.0);
@@ -63,6 +64,8 @@ public class MattTunnel {
             backRightTunnel.setDirection(-1.0);
         }
     }
+    */
+
 
     public void manipulateLift(double joyStick) {
         if (joyStick < 0) {

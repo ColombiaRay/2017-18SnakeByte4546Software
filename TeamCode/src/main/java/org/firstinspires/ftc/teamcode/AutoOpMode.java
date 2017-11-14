@@ -584,7 +584,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         else if (100 - displacement > 5){
             telemetry.addData("Too Little", percent + "% Accurate");
         }
-        telemetry.update();
+
+    }
+
+    public void getStraightness() throws InterruptedException {
+        if (getGyroYaw() - startAngle >= 0){
+            telemetry.addData("Angle",getGyroYaw() - startAngle + " right");
+        }
+        if (getGyroYaw() - startAngle <= 0){
+            telemetry.addData("Angle",startAngle - getGyroYaw() + " left");
+        }
+
     }
 
     //Proportion Stuff
@@ -627,6 +637,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveForwardPID(int distance) throws InterruptedException {
         setStartPos();
+        setStartAngle();
         resetIntegral();
         setInitialError(distance);
         setKValues(0.00015, 0.00000015,2);
@@ -641,6 +652,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         setZero();
         getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
     }
 
     public void moveBackwardPID(int distance) throws InterruptedException {
@@ -659,9 +672,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         setZero();
         getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
     }
 
-    public void turnPID(double angle) throws InterruptedException{
+    public void turnRightPID(double angle) throws InterruptedException{
         setStartAngle();
         resetIntegral();
         setInitialAngError(angle);
@@ -674,6 +689,23 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             turn(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+    }
+
+    public void turnLeftPID(double angle) throws InterruptedException{
+        setStartAngle();
+        resetIntegral();
+        setInitialAngError(angle);
+        setKValues(0.004, 0.000015, 2);
+        while (angDisplacement < angle){
+            findAngDisplacement();
+            findAngError(angle);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            turn(-1*(getProportion() + getIntegral() + getDerivative()));
         }
         setZero();
     }
