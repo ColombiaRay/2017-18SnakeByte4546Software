@@ -66,6 +66,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double kI;
     private double kD;
     private double PIDPower;
+    private double angError;
+    private double previousAngError;
 
 
     public void initialize() throws InterruptedException {
@@ -414,7 +416,6 @@ public abstract class AutoOpMode extends LinearOpMode {
     */
 
     public void scanImage() throws InterruptedException {
-        VuforiaLocalizer vuforia;
         //Camera Set Up
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -563,8 +564,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void findAngError(double goalAngle) throws InterruptedException{
-        previousError = error;
-        error = Math.abs(goalAngle - angDisplacement);
+        previousAngError = angError;
+        angError = Math.abs(goalAngle - angDisplacement);
     }
 
     public void setKValues(double p, double i, double d){
@@ -575,15 +576,17 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void getPercentTraveled(double goalDistance){
         double percent = displacement / goalDistance * 100;
-        if (Math.abs(100 - percent) <= 5){
+
+        if (Math.abs(100 - percent) <= 2){
             telemetry.addData("Success", percent + "% Accurate");
         }
-        else if (displacement - 100 > 5){
+        else if (displacement - 100 > 2){
             telemetry.addData("Too Much", percent + "% Accurate");
         }
-        else if (100 - displacement > 5){
+        else if (100 - displacement > 2){
             telemetry.addData("Too Little", percent + "% Accurate");
         }
+        telemetry.addData("Distance", displacement + "/" + goalDistance);
 
     }
 
@@ -640,7 +643,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015,2);
+        setKValues(0.00015, 0.00000015,0.25);
         while (displacement < distance){
             findDisplacement();
             findError(distance);
@@ -658,9 +661,10 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveBackwardPID(int distance) throws InterruptedException {
         setStartPos();
+        setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015,2);
+        setKValues(0.00015, 0.00000015,0.25);
         while (displacement < distance){
             findDisplacement();
             findError(distance);
@@ -708,5 +712,52 @@ public abstract class AutoOpMode extends LinearOpMode {
             turn(-1*(getProportion() + getIntegral() + getDerivative()));
         }
         setZero();
+    }
+
+    public void moveForwardStraight(int distance) throws InterruptedException {
+        setStartPos();
+        setStartAngle();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015,2);
+        while (displacement < distance){
+            findDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            moveForward(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+        getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
+    }
+
+    public void moveBackwardStraight(int distance) throws InterruptedException {
+        setStartPos();
+        setStartAngle();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015,2);
+        while (displacement < distance){
+            findDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            moveBackward(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+        getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
+    }
+
+    public void stabilizeStraightness() throws InterruptedException {
+        findAngDisplacement();
+        findAngError(0);
     }
 }
