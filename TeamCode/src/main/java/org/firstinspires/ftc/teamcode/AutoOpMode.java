@@ -50,6 +50,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     VuforiaLocalizer.Parameters parameters;
     char alliance;
     long closeTime;
+    Servo RelicGrabber;
     private double currentTime;
     private double pastTime;
     private double integral;
@@ -68,6 +69,8 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 
     public void initialize() throws InterruptedException {
+        RelicGrabber = hardwareMap.servo.get("RG");
+
         //FL is 0, BL is 1, FR is 2, BR is 3
         //Jewel is 0
         FL = hardwareMap.dcMotor.get("FL");
@@ -75,6 +78,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         BR = hardwareMap.dcMotor.get("BR");
         BL = hardwareMap.dcMotor.get("BL");
         FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -91,7 +96,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         leftLiftSlide = hardwareMap.dcMotor.get("LSlide");
         rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
         liftMani = hardwareMap.dcMotor.get("liftMani");
-        */
+
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
         //gyro init
@@ -109,6 +114,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         colorBack = hardwareMap.colorSensor.get("color2");
         //colorFront.enableLed(true);
         colorBack.enableLed(true);
+        */
+
     }
 
 
@@ -577,7 +584,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         else if (100 - displacement > 5){
             telemetry.addData("Too Little", percent + "% Accurate");
         }
-        telemetry.update();
+
+    }
+
+    public void getStraightness() throws InterruptedException {
+        if (getGyroYaw() - startAngle >= 0){
+            telemetry.addData("Angle",getGyroYaw() - startAngle + " right");
+        }
+        if (getGyroYaw() - startAngle <= 0){
+            telemetry.addData("Angle",startAngle - getGyroYaw() + " left");
+        }
+
     }
 
     //Proportion Stuff
@@ -620,6 +637,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveForwardPID(int distance) throws InterruptedException {
         setStartPos();
+        setStartAngle();
         resetIntegral();
         setInitialError(distance);
         setKValues(0.00015, 0.00000015,2);
@@ -634,6 +652,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         setZero();
         getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
     }
 
     public void moveBackwardPID(int distance) throws InterruptedException {
@@ -652,9 +672,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         setZero();
         getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
     }
 
-    public void turnPID(double angle) throws InterruptedException{
+    public void turnRightPID(double angle) throws InterruptedException{
         setStartAngle();
         resetIntegral();
         setInitialAngError(angle);
@@ -667,6 +689,23 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             turn(getProportion() + getIntegral() + getDerivative());
+        }
+        setZero();
+    }
+
+    public void turnLeftPID(double angle) throws InterruptedException{
+        setStartAngle();
+        resetIntegral();
+        setInitialAngError(angle);
+        setKValues(0.004, 0.000015, 2);
+        while (angDisplacement < angle){
+            findAngDisplacement();
+            findAngError(angle);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            turn(-1*(getProportion() + getIntegral() + getDerivative()));
         }
         setZero();
     }
