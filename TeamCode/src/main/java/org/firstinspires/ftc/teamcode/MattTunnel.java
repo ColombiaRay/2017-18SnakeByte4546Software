@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode;
 /**
  * Created by rubenr on 11/9/17.
  */
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
 public class MattTunnel {
+
     private DcMotor liftLeft;
     private DcMotor liftRight;
     private DcMotor inTake;
@@ -18,13 +20,13 @@ public class MattTunnel {
 
 
     public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT, Servo fRT, Servo bRT, Servo fLT, Servo blT) {
-        liftLeft = ll;
-        liftRight = rl;
-        inTake = iT;
+        liftLeft         = ll;
+        liftRight        = rl;
+        inTake           = iT;
         frontRightTunnel = fRT;
-        backRightTunnel = bRT;
-        frontLeftTunnel = fLT;
-        backLeftTunnel = blT;
+        backRightTunnel  = bRT;
+        frontLeftTunnel  = fLT;
+        backLeftTunnel   = blT;
 
     }
 
@@ -42,7 +44,7 @@ public class MattTunnel {
         }
     }
 
-    /*
+
     public void setBlocks(boolean isKeyPressed) {
         if (isKeyPressed) {
             frontLeftTunnel.setPosition(0);
@@ -60,26 +62,26 @@ public class MattTunnel {
             backRightTunnel.setPosition(0);
         }
     }
-    */
+
 
 
     public void manipulateLift(double joyStick) {
-        if (joyStick < 0) {
+        if (joyStick < -0.05) {
             lowerLift(joyStick);
-        } else if (joyStick != 0) {
+        } else if (joyStick > 0.05) {
             raiseLift(joyStick);
         }
     }
 
     public void raiseLift(double joy) {
-        if (joy < 0) {
+        if (joy < 0.05) {
             liftLeft.setPower(-joy); // Edit later
             liftRight.setPower(joy);
         }
     }
 
     public void lowerLift(double joy) {
-        if (joy > 0) {
+        if (joy > 0.05) {
             liftLeft.setPower(joy); // Edit later
             liftRight.setPower(-joy);
         }
