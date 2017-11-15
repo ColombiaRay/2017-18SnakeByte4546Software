@@ -33,8 +33,9 @@ public class PIDTest extends AutoOpMode{
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        moveForwardPID(2000);
+        //moveForwardPID(2000);
+        moveStrafePID(2000);
         sleep(3000);
-        moveBackwardPID(2000);
+        //moveBackwardPID(2000);
     }
 }
