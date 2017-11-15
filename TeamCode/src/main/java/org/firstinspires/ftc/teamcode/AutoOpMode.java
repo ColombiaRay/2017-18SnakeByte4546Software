@@ -74,7 +74,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 
     public void initialize() throws InterruptedException {
-        RelicGrabber = hardwareMap.servo.get("RG");
+        //RelicGrabber = hardwareMap.servo.get("RG");
 
         //FL is 0, BL is 1, FR is 2, BR is 3
         //Jewel is 0
@@ -104,6 +104,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
+        */
         //gyro init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -116,10 +117,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         imu.initialize(parameters);
         //color sensor init
         //colorFront = hardwareMap.colorSensor.get("color");
-        colorBack = hardwareMap.colorSensor.get("color2");
+        //colorBack = hardwareMap.colorSensor.get("color2");
         //colorFront.enableLed(true);
-        colorBack.enableLed(true);
-        */
+        //colorBack.enableLed(true);
+
 
     }
 
@@ -415,29 +416,33 @@ public abstract class AutoOpMode extends LinearOpMode {
         //Key
         parameters.vuforiaLicenseKey = "AQ1iIdT/////AAAAGZ0U6OKRfU8tpKf9LKl/7DM85y3Wp791rb6q3WwHfYaY53vqKSjAO8wU2FgulWnDt6gLqu9hB33z1reejMz/NyfL8u11QZlMIbimmnP/v4hvoXZWu0p62V9eMG3R2PQ3Z7rZ0qK8HwsQYE/0jmBhTy0D17M4fWpNW64QQnMJqFxq/N1BXm32PEInYDHBYs7WUrHL5oa9xeSSurxUq/TqDpeJwQM+1/GYppdAqzbcM1gi3yzU7JDLdNtOZ6+lbi5uXlU++GnFvQaEXL9uVcnTwMEgBhBng6oOEVoEDXiSUBuZHuMRGZmHfVXSNE3m1UXWyEdPTlMRI5vfEwfsBHmQTmvYr/jJjng3+tBpu85Q1ivo";
         //Use Front Camera
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
         this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
         VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
         VuforiaTrackable relicTemplate = relicTrackables.get(0);
         relicTemplate.setName("relicVuMarkTemplate");
         relicTrackables.activate();
+        boolean detected = false;
         long scanTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - scanTime < 10000) && opModeIsActive()) {
+        while ((System.currentTimeMillis() - scanTime < 10000) && (opModeIsActive()) && (!detected)) {
             RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
             if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     telemetry.addData("VuMark", "Left");
                     telemetry.update();
                     cryptoboxKey = "left";
+                    detected = true;
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     telemetry.addData("VuMark", "Center");
                     telemetry.update();
                     cryptoboxKey = "center";
+                    detected = true;
                 }
                 if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     telemetry.addData("VuMark", "Right");
                     telemetry.update();
                     cryptoboxKey = "right";
+                    detected = true;
                 }
             }
         }
@@ -480,13 +485,13 @@ public abstract class AutoOpMode extends LinearOpMode {
         rightMani.setPosition(0.5);
     }
 
-    public double getStrafeEncoders() {
+    public int getStrafeEncoders() {
         int backLeftEncoderValue = BL.getCurrentPosition();
         int backRightEncoderValue = BR.getCurrentPosition();
         int frontRightEncoderValue = FR.getCurrentPosition();
         int frontLeftEncoderValue = FL.getCurrentPosition();
 
-        double avgDiagPosition1 = (Math.abs(backLeftEncoderValue) + Math.abs(frontRightEncoderValue)) / 2.0;
+        int avgDiagPosition1 = (Math.abs(backLeftEncoderValue) + Math.abs(frontRightEncoderValue)) / 2;
         //double avgDiagPosition2 = (Math.abs(backRightEncoderValue) + Math.abs(frontLeftEncoderValue)) / 2.0;
 
 
@@ -510,6 +515,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
     }
 
+    /*
     //Moves the robot the the correct column (values not tested)
     public void moveKey() throws InterruptedException {
         if (cryptoboxKey.equals("left")) {
@@ -520,6 +526,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(0.5, 200);
         }
     }
+    */
     //PID Stuff
 
     public void setStartPos() throws InterruptedException {
@@ -590,18 +597,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
-    public void findStrafeError(){
-        previousStrafeError = strafeError;
-        strafeError = getStrafeEncoders();
-    }
 
-    public void findStrafeDisplacement(int goalDistance){
-        strafeDisplacement = Math.abs(goalDistance - strafeDisplacement);
-    }
-
-    public void setInitialStrafeError(int initial){
-        strafeError = initial;
-    }
 
     //Proportion Stuff
 
@@ -653,6 +649,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Current Derivative", kD * deltaError / deltaT);
         return kD * deltaError / deltaT;
     }
+
 
     public void moveForwardPID(int distance) throws InterruptedException {
         setStartPos();
@@ -772,29 +769,57 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+    //Almost nothing done with this yet
     public void stabilizeStraightness() throws InterruptedException {
         findAngDisplacement();
         findAngError(0);
     }
 
-    public void StrafeRightPID(int distance) throws InterruptedException {
-        setStartAngle();
+    //PID Strafing
+
+    public void setStartStrafePos(){
+        startPos = getStrafeEncoders();
+        findStrafeDisplacement();
+    }
+
+    public void findStrafeDisplacement(){
+        displacement = Math.abs(getStrafeEncoders() - startPos);
+    }
+
+    public void moveStrafePID(int distance) throws InterruptedException {
+        setStartPos();
         resetIntegral();
-        setInitialStrafeError(distance);
-        setKValues(0.00015, 0.00000015,0.25);
-        while (strafeDisplacement < distance){
-            findStrafeDisplacement(distance);
-            findStrafeError();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015, 2);
+        while (displacement < distance) {
+            findStrafeDisplacement();
+            findError(distance);
             findDeltaT();
             findDeltaError();
             tallyIntegral();
+            telemetry.addData("Power", getProportion() + getIntegral() + getDerivative());
             telemetry.update();
-            moveForward(getProportion() + getIntegral() + getDerivative());
+            setPower(0,0,getProportion() + getIntegral() + getDerivative());
         }
         setZero();
         getPercentTraveled(distance);
         getStraightness();
         telemetry.update();
     }
+
+    public void moveToColumn() throws InterruptedException {
+        if (cryptoboxKey.equals("left")){
+            moveStrafePID(2000);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafePID(1000);
+        }
+        else{
+            moveStrafePID(400);
+            sleep(1000);
+        }
+    }
+
+
 }
 

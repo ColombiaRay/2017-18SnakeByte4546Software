@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class imageProcessingTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        initialize();
+        waitForStart();
         scanImage();
+        moveToColumn();
     }
 }
