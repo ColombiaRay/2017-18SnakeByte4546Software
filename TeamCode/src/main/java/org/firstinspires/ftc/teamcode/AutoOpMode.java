@@ -71,6 +71,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double strafeError;
     private double strafeDisplacement;
     private double previousStrafeError;
+    private DcMotor intakeMotor;
 
 
     public void initialize() throws InterruptedException {
@@ -82,6 +83,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         FR = hardwareMap.dcMotor.get("FR");
         BR = hardwareMap.dcMotor.get("BR");
         BL = hardwareMap.dcMotor.get("BL");
+        intakeMotor = hardwareMap.dcMotor.get("intake");
         FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -465,6 +467,14 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
     */
 
+    public void useIntake(){
+        double intakeTime =  System.currentTimeMillis();
+        while (System.currentTimeMillis() - intakeTime < 30000){
+            intakeMotor.setPower(-1);
+        }
+        intakeMotor.setPower(0);
+    }
+
     public void grabGlyph() throws InterruptedException {
         closeTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - closeTime < 2000) {
@@ -786,18 +796,18 @@ public abstract class AutoOpMode extends LinearOpMode {
         displacement = Math.abs(getStrafeEncoders() - startPos);
     }
 
-    public void moveStrafePID(int distance) throws InterruptedException {
-        setStartPos();
+    public void moveStrafeRightPID(int distance) throws InterruptedException {
+        setStartStrafePos();
+        setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 2);
+        setKValues(0.00015, 0.00000015, 0.2);
         while (displacement < distance) {
             findStrafeDisplacement();
             findError(distance);
             findDeltaT();
             findDeltaError();
             tallyIntegral();
-            telemetry.addData("Power", getProportion() + getIntegral() + getDerivative());
             telemetry.update();
             setPower(0,0,getProportion() + getIntegral() + getDerivative());
         }
@@ -807,15 +817,36 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+    public void moveStrafeLeftPID(int distance) throws InterruptedException {
+        setStartStrafePos();
+        setStartAngle();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(0.00015, 0.00000015, 0.2);
+        while (displacement < distance) {
+            findStrafeDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            setPower(0,0,-1*(getProportion() + getIntegral() + getDerivative()));
+        }
+        setZero();
+        getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
+    }
+
     public void moveToColumn() throws InterruptedException {
         if (cryptoboxKey.equals("left")){
-            moveStrafePID(2000);
+            moveStrafeLeftPID(2000);
         }
         else if (cryptoboxKey.equals("center")){
-            moveStrafePID(1000);
+            moveStrafeLeftPID(1000);
         }
         else{
-            moveStrafePID(400);
+            moveStrafeLeftPID(400);
             sleep(1000);
         }
     }

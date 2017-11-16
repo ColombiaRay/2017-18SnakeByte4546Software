@@ -39,7 +39,8 @@ public class MattTunnel {
 
         if (isKeyPressed) {
             inTake.setPower(1.0);
-        } else {
+        }
+        else {
             inTake.setPower(0.0);
         }
     }

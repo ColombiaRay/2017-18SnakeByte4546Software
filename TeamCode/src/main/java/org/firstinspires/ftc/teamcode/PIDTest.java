@@ -34,7 +34,9 @@ public class PIDTest extends AutoOpMode{
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
         //moveForwardPID(2000);
-        moveStrafePID(2000);
+        setAlliance('b');
+        waitForStart();
+        moveStrafeLeftPID(2000);
         sleep(3000);
         //moveBackwardPID(2000);
     }
