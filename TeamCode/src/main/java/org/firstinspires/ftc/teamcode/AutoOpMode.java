@@ -54,6 +54,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double currentTime;
     private double pastTime;
     private double integral;
+    private double angleIntegral;
+    private double angleDerivative;
     private double error;
     private double previousError;
     private double deltaT;
@@ -426,6 +428,13 @@ public abstract class AutoOpMode extends LinearOpMode {
         relicTrackables.activate();
         boolean detected = false;
         long scanTime = System.currentTimeMillis();
+        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        relativeLayout.post(new Runnable() {
+            public void run() {
+                relativeLayout.setBackgroundColor(Color.RED);
+            }
+        });
         while ((System.currentTimeMillis() - scanTime < 10000) && (opModeIsActive()) && (!detected)) {
             RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
             if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
@@ -433,17 +442,32 @@ public abstract class AutoOpMode extends LinearOpMode {
                     telemetry.addData("VuMark", "Left");
                     telemetry.update();
                     cryptoboxKey = "left";
+                    relativeLayout.post(new Runnable() {
+                        public void run() {
+                            relativeLayout.setBackgroundColor(Color.GREEN);
+                        }
+                    });
                     detected = true;
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     telemetry.addData("VuMark", "Center");
                     telemetry.update();
                     cryptoboxKey = "center";
+                    relativeLayout.post(new Runnable() {
+                        public void run() {
+                            relativeLayout.setBackgroundColor(Color.GREEN);
+                        }
+                    });
                     detected = true;
                 }
                 if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     telemetry.addData("VuMark", "Right");
                     telemetry.update();
                     cryptoboxKey = "right";
+                    relativeLayout.post(new Runnable() {
+                        public void run() {
+                            relativeLayout.setBackgroundColor(Color.GREEN);
+                        }
+                    });
                     detected = true;
                 }
             }
@@ -469,8 +493,9 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void useIntake(){
         double intakeTime =  System.currentTimeMillis();
-        while (System.currentTimeMillis() - intakeTime < 30000){
+        while ((System.currentTimeMillis() - intakeTime < 30000) && (opModeIsActive())){
             intakeMotor.setPower(-1);
+            idle();
         }
         intakeMotor.setPower(0);
     }
@@ -575,6 +600,12 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void findAngError(double goalAngle) throws InterruptedException {
         previousAngError = angError;
         angError = Math.abs(goalAngle - angDisplacement);
+    }
+
+    //Finds error, but has angle can be negative
+    public void findTrueAngError(double goalAngle) throws InterruptedException {
+        previousAngError = angError;
+        angError = goalAngle - angDisplacement;
     }
 
     public void setKValues(double p, double i, double d) {
@@ -703,6 +734,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+
+
     public void turnRightPID(double angle) throws InterruptedException {
         setStartAngle();
         resetIntegral();
@@ -742,7 +775,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 2);
+        setKValues(0.00015, 0.00000015, 0.25);
         while (displacement < distance) {
             findDisplacement();
             findError(distance);
@@ -750,7 +783,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             findDeltaError();
             tallyIntegral();
             telemetry.update();
-            moveForward(getProportion() + getIntegral() + getDerivative());
+            setPower(getProportion() + getIntegral() + getDerivative(), complexStraighten(), 0);
         }
         setZero();
         getPercentTraveled(distance);
@@ -779,10 +812,26 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
-    //Almost nothing done with this yet
-    public void stabilizeStraightness() throws InterruptedException {
+    //Untested
+    public double simpleStraighten() throws InterruptedException {
         findAngDisplacement();
-        findAngError(0);
+        findTrueAngError(0);
+        if (angError >= 0.1 ){
+            return -0.1;
+        }
+        else if (angError <= -0.1){
+            return 0.1;
+        }
+        return 0;
+    }
+
+    public double complexStraighten() throws InterruptedException {
+        findAngDisplacement();
+        findTrueAngError(0);
+        angleIntegral += deltaT * angError;
+        angleDerivative = (angError - previousAngError)/deltaT;
+        return -1 * (0.004 * angError + 0.000015 * angleDerivative + 2 * angleIntegral);
+
     }
 
     //PID Strafing
