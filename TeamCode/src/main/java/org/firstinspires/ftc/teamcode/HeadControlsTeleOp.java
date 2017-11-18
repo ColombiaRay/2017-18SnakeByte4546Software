@@ -78,8 +78,8 @@ public class HeadControlsTeleOp extends OpMode {
         FR                  = hardwareMap.dcMotor.get("FR");
         BR                  = hardwareMap.dcMotor.get("BR");
         BL                  = hardwareMap.dcMotor.get("BL");
-        leftArm             = hardwareMap.servo.get("LRelicArm");
-        rightArm            = hardwareMap.servo.get("RRelicArm");
+        //leftArm             = hardwareMap.servo.get("LRelicArm");
+        //rightArm            = hardwareMap.servo.get("RRelicArm");
         leftRelic           = hardwareMap.servo.get("LRelic");
         rightRelic          = hardwareMap.servo.get("RRelic");
         leftMani            = hardwareMap.servo.get("LMani");
