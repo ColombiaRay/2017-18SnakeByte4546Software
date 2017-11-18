@@ -60,6 +60,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double previousError;
     private double deltaT;
     private double deltaError;
+    private double deltaAngError;
     private int startPos;
     private double startAngle;
     private double angDisplacement;
@@ -74,6 +75,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double strafeDisplacement;
     private double previousStrafeError;
     private DcMotor intakeMotor;
+    private double time;
 
 
     public void initialize() throws InterruptedException {
@@ -131,9 +133,9 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void setPower(double velocity, double rotation, double strafe) throws InterruptedException {
         FL.setPower(velocity - rotation + strafe);
-        FR.setPower(-velocity - rotation + strafe);
+        FR.setPower(-velocity - rotation - strafe);
         BL.setPower(velocity - rotation - strafe);
-        BR.setPower(-velocity - rotation - strafe);
+        BR.setPower(-velocity - rotation + strafe);
     }
 
     public void setZero() {
@@ -147,20 +149,35 @@ public abstract class AutoOpMode extends LinearOpMode {
         return Math.tan(angle) / velocity;
     }
 
+    public double getGyroPitch() throws InterruptedException {
+        Orientation angles = imu.getAngularOrientation();
+        return (angles.secondAngle * -1);
+    }
+
+    //
+    public double getGyroRoll() throws InterruptedException {
+        Orientation angles = imu.getAngularOrientation();
+        return (angles.thirdAngle * -1);
+    }
+
+
+    //firstAngle
     public double getGyroYaw() throws InterruptedException {
         Orientation angles = imu.getAngularOrientation();
         return (angles.firstAngle * -1);
     }
 
-    public double getGyroPitch() throws InterruptedException {
-        Orientation angles = imu.getAngularOrientation();
-        return (angles.thirdAngle * -1);
+    public void testGyro() throws InterruptedException {
+        telemetry.addData("Yaw", getGyroYaw());
+        telemetry.addData("Roll", getGyroRoll());
+        telemetry.addData("Pitch", getGyroPitch());
+        telemetry.update();
     }
 
     public double getGyroYaw(double turn) throws InterruptedException {
         double turnAbs = Math.abs(turn);
         Orientation angles = imu.getAngularOrientation();
-        return angles.firstAngle;
+        return angles.secondAngle;
 //        if (turnAbs > 270 && Math.abs(angles.firstAngle) < 90)
 //            return (Math.abs(angles.firstAngle) - (turnAbs - 360));
 //        else if (turnAbs < 90 && Math.abs(angles.firstAngle) > 270)
@@ -189,16 +206,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         //I think this part sets the driver station color to alliance color
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        final float[] purple = {276, 63, 78};
         if (alliance == 114) {
             relativeLayout.post(new Runnable() {
                 public void run() {
-                    relativeLayout.setBackgroundColor(Color.RED);
+                    relativeLayout.setBackgroundColor(Color.HSVToColor(purple));
                 }
             });
         } else if (alliance == 98) {
             relativeLayout.post(new Runnable() {
                 public void run() {
-                    relativeLayout.setBackgroundColor(Color.BLUE);
+                    relativeLayout.setBackgroundColor(Color.HSVToColor(purple));
                 }
             });
         }
@@ -594,7 +612,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void setInitialAngError(double goalAngle) {
-        error = goalAngle;
+        angError = goalAngle;
     }
 
     public void findAngError(double goalAngle) throws InterruptedException {
@@ -628,6 +646,20 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
+    public void getPercentTurned(double goalAngle){
+        double percent = angDisplacement / goalAngle * 100;
+
+        if (Math.abs(100 - percent) <= 2) {
+            telemetry.addData("Success", percent + "% Accurate");
+        } else if (displacement - 100 > 2) {
+            telemetry.addData("Too Much", percent + "% Accurate");
+        } else if (100 - displacement > 2) {
+            telemetry.addData("Too Little", percent + "% Accurate");
+        }
+        telemetry.addData("Angle", angDisplacement + "/" + goalAngle);
+
+    }
+
     public void getStraightness() throws InterruptedException {
         if (getGyroYaw() - startAngle >= 0) {
             telemetry.addData("Angle", getGyroYaw() - startAngle + " right");
@@ -636,6 +668,32 @@ public abstract class AutoOpMode extends LinearOpMode {
             telemetry.addData("Angle", startAngle - getGyroYaw() + " left");
         }
 
+    }
+
+    public void reportSuccess(int distance){
+        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        if (Math.abs(displacement - distance) <= 5){
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.GREEN);
+                }
+            });
+        }
+        else if (Math.abs(displacement - distance) <= 20){
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.YELLOW);
+                }
+            });
+        }
+        else{
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.RED);
+                }
+            });
+        }
     }
 
 
@@ -647,6 +705,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         return kP * error;
     }
 
+    public double getAngProportion() {
+        telemetry.addData("Proportion", kP * angError);
+        return kP * angError;
+    }
+
     public double getStrafeProportion() {
         telemetry.addData("Proportion", kP * strafeError);
         return kP * strafeError;
@@ -654,17 +717,24 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Integral Stuff
     public void findDeltaT() {
-        pastTime = currentTime;
-        currentTime = System.currentTimeMillis();
-        deltaT = currentTime - pastTime;
+        deltaT = (System.currentTimeMillis() - pastTime);
+        pastTime = System.currentTimeMillis();
+        time += deltaT;
+        telemetry.addData("Time", time);
     }
 
     public void resetIntegral() {
         integral = 0;
+        angError = 0;
+        pastTime = System.currentTimeMillis();
     }
 
     public void tallyIntegral() {
         integral += deltaT * error;
+    }
+
+    public void tallyAngIntegral() {
+        angleIntegral += deltaT * angError;
     }
 
     public void tallyStrafeIntegral() {
@@ -672,14 +742,28 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public double getIntegral() {
-        telemetry.addData("Current Integral", integral * kI);
+        telemetry.addData("Current Integral", integral*kI);
         return integral * kI;
+    }
+
+    public double getAngIntegral(){
+        telemetry.addData("Current Integral", angleIntegral*kI);
+        return angleIntegral * kI;
     }
 
     //Derivative Stuff
 
     public void findDeltaError() {
+        telemetry.addData("Error", error);
+        telemetry.addData("Previous", previousError);
         deltaError = error - previousError;
+    }
+
+    public void findDeltaAngError() {
+        telemetry.addData("Error", angError);
+        telemetry.addData("Previous", previousAngError);
+        deltaAngError = angError - previousAngError;
+        telemetry.addData("AngError", deltaAngError);
     }
 
     public void findStrafeDeltaError() {
@@ -688,7 +772,12 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public double getDerivative() {
         telemetry.addData("Current Derivative", kD * deltaError / deltaT);
-        return kD * deltaError / deltaT;
+        return kD * deltaAngError / deltaT;
+    }
+
+    public double getAngDerivative() {
+        telemetry.addData("Current Derivative", kD * deltaAngError / deltaT);
+        return kD * deltaAngError / deltaT;
     }
 
 
@@ -697,7 +786,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 0.25);
+        setKValues(0.0002, 0.0000001, 0.5);
         while (displacement < distance) {
             findDisplacement();
             findError(distance);
@@ -711,6 +800,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         getPercentTraveled(distance);
         getStraightness();
         telemetry.update();
+        reportSuccess(distance);
     }
 
     public void moveBackwardPID(int distance) throws InterruptedException {
@@ -718,7 +808,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 0.25);
+        setKValues(0.0002, 0.0000001, 0.5);
         while (displacement < distance) {
             findDisplacement();
             findError(distance);
@@ -735,39 +825,44 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
 
-
     public void turnRightPID(double angle) throws InterruptedException {
         setStartAngle();
         resetIntegral();
         setInitialAngError(angle);
-        setKValues(0.004, 0.000015, 2);
-        while (angDisplacement < angle) {
+        //setKValues(0.002777, 0.000002, 0.1);
+        setKValues(0.002777, 0.000002, 0.11);
+        while ((angDisplacement < angle)&&(opModeIsActive())) {
             findAngDisplacement();
+            telemetry.addData("Yaw", getGyroYaw());
             findAngError(angle);
             findDeltaT();
-            findDeltaError();
-            tallyIntegral();
+            findDeltaAngError();
+            tallyAngIntegral();
             telemetry.update();
-            turn(getProportion() + getIntegral() + getDerivative());
+            turn(getAngProportion() + getAngIntegral() + getAngDerivative());
         }
         setZero();
+        getPercentTurned(angle);
     }
 
     public void turnLeftPID(double angle) throws InterruptedException {
         setStartAngle();
         resetIntegral();
         setInitialAngError(angle);
-        setKValues(0.004, 0.000015, 2);
-        while (angDisplacement < angle) {
+        setKValues(0.002777, 0.000015, 0.1);
+        //setKValues(0.004, 0.000015, 3.0);
+        while ((angDisplacement < angle)&&(opModeIsActive())) {
             findAngDisplacement();
+            telemetry.addData("Yaw", getGyroYaw());
             findAngError(angle);
             findDeltaT();
-            findDeltaError();
-            tallyIntegral();
+            findDeltaAngError();
+            tallyAngIntegral();
             telemetry.update();
-            turn(-1 * (getProportion() + getIntegral() + getDerivative()));
+            turn(-1 * (getAngProportion() + getAngIntegral() + getAngDerivative()));
         }
         setZero();
+        getPercentTurned(angle);
     }
 
     public void moveForwardStraight(int distance) throws InterruptedException {
@@ -800,6 +895,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         while (displacement < distance) {
             findDisplacement();
             findError(distance);
+            deltaT = System.currentTimeMillis() - pastTime;
             findDeltaT();
             findDeltaError();
             tallyIntegral();
@@ -850,8 +946,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 0.2);
-        while (displacement < distance) {
+        setKValues(0.0008, 0.0000004, 0.5);
+        while ((displacement < distance) && (opModeIsActive())) {
             findStrafeDisplacement();
             findError(distance);
             findDeltaT();
@@ -859,6 +955,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             setPower(0,0,getProportion() + getIntegral() + getDerivative());
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -871,7 +968,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(0.00015, 0.00000015, 0.2);
+        setKValues(0.0008, 0.0000004, 0.5);
         while (displacement < distance) {
             findStrafeDisplacement();
             findError(distance);
