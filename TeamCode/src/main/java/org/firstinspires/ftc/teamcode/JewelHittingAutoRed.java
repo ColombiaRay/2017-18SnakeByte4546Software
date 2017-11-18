@@ -23,8 +23,10 @@ public class JewelHittingAutoRed extends AutoOpMode {
         sleep(2000);
         moveStrafe(-0.5,300);
         setZero();
-        //releaseGlyph();
         sleep(1000);
         moveForward(-0.3,100);
+        tunnel.setBlocks(true);
+        sleep(1000);
+        tunnel.setBlocks(false);
     }
 }

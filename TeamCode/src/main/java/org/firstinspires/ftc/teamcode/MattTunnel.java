@@ -30,6 +30,17 @@ public class MattTunnel {
 
     }
 
+    public MattTunnel(DcMotor iT, Servo fRT, Servo bRT, Servo fLT, Servo blT) {
+        liftLeft         = null;
+        liftRight        = null;
+        inTake           = iT;
+        frontRightTunnel = fRT;
+        backRightTunnel  = bRT;
+        frontLeftTunnel  = fLT;
+        backLeftTunnel   = blT;
+
+    }
+
     public void toggleInTake(boolean isKeyPressed) {
         /**
          * Pseudocode:

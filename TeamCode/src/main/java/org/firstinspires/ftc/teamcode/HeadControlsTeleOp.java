@@ -74,40 +74,41 @@ public class HeadControlsTeleOp extends OpMode {
         Expansion Hub 2: Servo 0 is JewelHitter
         */
 
-        FL             = hardwareMap.dcMotor.get("FL");
-        FR             = hardwareMap.dcMotor.get("FR");
-        BR             = hardwareMap.dcMotor.get("BR");
-        BL             = hardwareMap.dcMotor.get("BL");
-        leftArm        = hardwareMap.servo.get("LRelicArm");
-        rightArm       = hardwareMap.servo.get("RRelicArm");
-        leftRelic      = hardwareMap.servo.get("LRelic");
-        rightRelic     = hardwareMap.servo.get("RRelic");
-        leftMani       = hardwareMap.servo.get("LMani");
-        rightMani      = hardwareMap.servo.get("RMani");
-        leftLiftSlide  = hardwareMap.dcMotor.get("LSlide");
-        rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
-        liftMani       = hardwareMap.dcMotor.get("liftMani");
-        jewelHitter    = hardwareMap.servo.get("jewelhitter");
-        liftLeft       = hardwareMap.dcMotor.get("leftLift");
-        liftRight      = hardwareMap.dcMotor.get("rightLift");
-        inTake         = hardwareMap.dcMotor.get("intake");
+        FL                  = hardwareMap.dcMotor.get("FL");
+        FR                  = hardwareMap.dcMotor.get("FR");
+        BR                  = hardwareMap.dcMotor.get("BR");
+        BL                  = hardwareMap.dcMotor.get("BL");
+        leftArm             = hardwareMap.servo.get("LRelicArm");
+        rightArm            = hardwareMap.servo.get("RRelicArm");
+        leftRelic           = hardwareMap.servo.get("LRelic");
+        rightRelic          = hardwareMap.servo.get("RRelic");
+        leftMani            = hardwareMap.servo.get("LMani");
+        rightMani           = hardwareMap.servo.get("RMani");
+        leftLiftSlide       = hardwareMap.dcMotor.get("LSlide");
+        rightLiftSlide      = hardwareMap.dcMotor.get("RSlide");
+        liftMani            = hardwareMap.dcMotor.get("liftMani");
+        jewelHitter         = hardwareMap.servo.get("jewelhitter");
+        liftLeft            = hardwareMap.dcMotor.get("leftLift");
+        liftRight           = hardwareMap.dcMotor.get("rightLift");
+        inTake              = hardwareMap.dcMotor.get("intake");
 
-        frontRightTunnel = hardwareMap.servo.get("frontRightTunnel");
-        backRightTunnel = hardwareMap.servo.get("frontRightTunnel");
-        frontLeftTunnel = hardwareMap.servo.get("frontRightTunnel");
-        backLeftTunnel = hardwareMap.servo.get("frontRightTunnel");
+        frontRightTunnel    = hardwareMap.servo.get("frontRightTunnel");
+        backRightTunnel     = hardwareMap.servo.get("frontRightTunnel");
+        frontLeftTunnel     = hardwareMap.servo.get("frontRightTunnel");
+        backLeftTunnel      = hardwareMap.servo.get("frontRightTunnel");
 
-        relicGrabber   = hardwareMap.servo.get("relicGrabber");
-        relicArm       = hardwareMap.servo.get("relicArm");
-        halfSpeed      = false;
-        liftOut        = false;
-        relicOut       = false;
-        clampClosed    = false;
-        rightMotion    = 0;
-        leftMotion     = 0;
-        tunnel         = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        relicGrabber   = hardwareMap.servo.get("relicGrabber");
-        relicClamp     = hardwareMap.servo.get("relicClamp");
+        relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        relicArm            = hardwareMap.servo.get("relicArm");
+        halfSpeed           = false;
+        liftOut             = false;
+        relicOut            = false;
+        clampClosed         = false;
+        rightMotion         = 0;
+        leftMotion          = 0;
+        tunnel              = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
+        relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        relicClamp          = hardwareMap.servo.get("relicClamp");
+
         rightMani.setDirection(Servo.Direction.FORWARD);
         leftMani.setDirection(Servo.Direction.REVERSE);
         jewelHitter.setDirection(Servo.Direction.REVERSE);
@@ -125,8 +126,8 @@ public class HeadControlsTeleOp extends OpMode {
         useJewel();
         tunnel.toggleInTake(gamepad2.right_bumper);
         tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
-        tunnel.setBlocks(false);
-        tunnel.releaseBlocks(false);
+        tunnel.setBlocks(gamepad2.dpad_left);
+        tunnel.releaseBlocks(gamepad2.dpad_right);
         jewelHitter.setPosition(0.54);
         telemetry.addData("JewelHitter", jewelHitter.getPosition());
 
