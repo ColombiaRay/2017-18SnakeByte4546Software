@@ -72,6 +72,11 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double strafeDisplacement;
     private double previousStrafeError;
     private DcMotor intakeMotor;
+    private Servo frontRightTunnel;
+    private Servo backRightTunnel;
+    private Servo frontLeftTunnel;
+    private Servo backLeftTunnel;
+    protected MattTunnel tunnel;
 
 
     public void initialize() throws InterruptedException {
@@ -122,7 +127,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         //colorBack = hardwareMap.colorSensor.get("color2");
         //colorFront.enableLed(true);
         //colorBack.enableLed(true);
-
+        frontRightTunnel    = hardwareMap.servo.get("frontRightTunnel");
+        backRightTunnel     = hardwareMap.servo.get("frontRightTunnel");
+        frontLeftTunnel     = hardwareMap.servo.get("frontRightTunnel");
+        backLeftTunnel      = hardwareMap.servo.get("frontRightTunnel");
+        tunnel              = new MattTunnel(intakeMotor, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
 
     }
 
@@ -494,6 +503,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         leftMani.setPosition(0.5);
         rightMani.setPosition(0.5);
     }
+
+
 
     public int getStrafeEncoders() {
         int backLeftEncoderValue = BL.getCurrentPosition();
