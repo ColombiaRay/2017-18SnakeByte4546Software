@@ -76,6 +76,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double previousStrafeError;
     private DcMotor intakeMotor;
     private double time;
+    private int colorRec;
 
 
     public void initialize() throws InterruptedException {
@@ -122,12 +123,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
         //color sensor init
-        //colorFront = hardwareMap.colorSensor.get("color");
+        colorFront = hardwareMap.colorSensor.get("color");
         //colorBack = hardwareMap.colorSensor.get("color2");
-        //colorFront.enableLed(true);
+        colorFront.enableLed(true);
         //colorBack.enableLed(true);
-
-
+        reportInitialized();
     }
 
 
@@ -143,6 +143,28 @@ public abstract class AutoOpMode extends LinearOpMode {
         FR.setPower(0);
         BL.setPower(0);
         BR.setPower(0);
+    }
+
+    public void reportInitialized(){
+        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        if (alliance == 98){
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.BLUE);
+                }
+            });
+            telemetry.addData("Blue Auto", "Initialized");
+        }
+        else {
+            relativeLayout.post(new Runnable() {
+                public void run() {
+                    relativeLayout.setBackgroundColor(Color.RED);
+                }
+            });
+            telemetry.addData("Red Auto", "Initialized");
+        }
+        telemetry.update();
     }
 
     public double calculateStrafe(double velocity, double angle) throws InterruptedException {
@@ -203,6 +225,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void setAlliance(char c) throws InterruptedException {
         alliance = c;
+        /*
         //I think this part sets the driver station color to alliance color
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
@@ -220,107 +243,9 @@ public abstract class AutoOpMode extends LinearOpMode {
                 }
             });
         }
-    }
-
-    public String choseOneColor(char c) throws InterruptedException {
-        //hitting blue
-        if (c == 114) {
-            if (getRed(colorBack) < getBlue(colorBack)) {
-                telemetry.addData("hit", "backwards");
-                telemetry.update();
-                return "forwards";
-            } else if (getRed(colorBack) > getBlue(colorBack)) {
-                telemetry.addData("hit", "forwards");
-                telemetry.update();
-                return "backwards";
-            } else {
-                sleep(1000);
-                if (recCount < 2)
-                    recCount++;
-                chooseColor(c);
-            }
-        }
-        //hitting red
-        if (c == 98) {
-            if (getRed(colorBack) < getBlue(colorBack)) {
-                telemetry.addData("hit", "forwards");
-                telemetry.update();
-                return "forwards";
-            } else if (getRed(colorBack) > getBlue(colorBack)) {
-                telemetry.addData("hit", "backwards");
-                telemetry.update();
-                return "backwards";
-            } else {
-                sleep(1000);
-                if (recCount < 2)
-                    recCount++;
-                chooseColor(c);
-            }
-        }
-        return "broken";
-    }
-
-    public String chooseColor(char c) throws InterruptedException {
-        //hitting blue
-        if (c == 114) {
-            if (getBlue(colorFront) < getBlue(colorBack)) {
-                telemetry.addData("hit", "forwards");
-                telemetry.update();
-                return "forwards";
-            } else if (getBlue(colorFront) > getBlue(colorBack)) {
-                telemetry.addData("hit", "backwards");
-                telemetry.update();
-                return "backwards";
-            } else {
-                sleep(1000);
-                if (recCount < 2)
-                    recCount++;
-                chooseColor(c);
-                telemetry.addData("ColorSensors", "broken");
-                telemetry.update();
-                return "broken";
-
-            }
-        }
-        //hitting red
-        if (c == 98) {
-            if (getRed(colorFront) < getRed(colorBack)) {
-                telemetry.addData("hit", "forwards");
-                telemetry.update();
-                return "forwards";
-            } else if (getRed(colorFront) > getRed(colorBack)) {
-                telemetry.addData("hit", "backwards");
-                telemetry.update();
-                return "backwards";
-            } else {
-                sleep(1000);
-                if (recCount < 2)
-                    recCount++;
-                chooseColor(c);
-                telemetry.addData("ColorSensors", "broken");
-                telemetry.update();
-                return "broken";
-            }
-        }
-        return "broken";
-    }
-
-
-    public void hitJewel() throws InterruptedException {
-        /*if (choseOneColor(alliance).equals("forwards")) {
-            //park in safe zone
-            moveForward(0.25, 200);
-            setZero();
-            moveForward(-0.25, 200);
-        }
-        else if (choseOneColor(alliance).equals("backwards")) {
-            moveForward(-0.25, 200);
-            setZero();
-            moveForward(0.25, 200);
-        }
         */
-        raiseJewel();
     }
+
 
     public int getAvgEncoder() throws InterruptedException {
         return (Math.abs(FL.getCurrentPosition()) + Math.abs(FR.getCurrentPosition())) / 2;
@@ -520,9 +445,10 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void grabGlyph() throws InterruptedException {
         closeTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - closeTime < 2000) {
+        while ((System.currentTimeMillis() - closeTime < 2000) && (opModeIsActive())) {
             leftMani.setPosition(1);
             rightMani.setPosition(1);
+            idle();
         }
         leftMani.setPosition(0.5);
         rightMani.setPosition(0.5);
@@ -530,9 +456,10 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void releaseGlyph() throws InterruptedException {
         closeTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - closeTime < 2000) {
+        while ((System.currentTimeMillis() - closeTime < 2000) && (opModeIsActive())) {
             leftMani.setPosition(0.3);
             rightMani.setPosition(0.3);
+            idle();
         }
         leftMani.setPosition(0.5);
         rightMani.setPosition(0.5);
@@ -787,7 +714,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetIntegral();
         setInitialError(distance);
         setKValues(0.0002, 0.0000001, 0.5);
-        while (displacement < distance) {
+        while ((displacement < distance) && (opModeIsActive())) {
             findDisplacement();
             findError(distance);
             findDeltaT();
@@ -795,6 +722,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             moveForward(getProportion() + getIntegral() + getDerivative());
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -809,7 +737,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetIntegral();
         setInitialError(distance);
         setKValues(0.0002, 0.0000001, 0.5);
-        while (displacement < distance) {
+        while ((displacement < distance) && (opModeIsActive())) {
             findDisplacement();
             findError(distance);
             findDeltaT();
@@ -817,6 +745,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             moveBackward(getProportion() + getIntegral() + getDerivative());
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -840,6 +769,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyAngIntegral();
             telemetry.update();
             turn(getAngProportion() + getAngIntegral() + getAngDerivative());
+            idle();
         }
         setZero();
         getPercentTurned(angle);
@@ -860,6 +790,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyAngIntegral();
             telemetry.update();
             turn(-1 * (getAngProportion() + getAngIntegral() + getAngDerivative()));
+            idle();
         }
         setZero();
         getPercentTurned(angle);
@@ -871,7 +802,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetIntegral();
         setInitialError(distance);
         setKValues(0.00015, 0.00000015, 0.25);
-        while (displacement < distance) {
+        while ((displacement < distance) && (opModeIsActive())) {
             findDisplacement();
             findError(distance);
             findDeltaT();
@@ -879,6 +810,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             setPower(getProportion() + getIntegral() + getDerivative(), complexStraighten(), 0);
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -892,7 +824,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetIntegral();
         setInitialError(distance);
         setKValues(0.00015, 0.00000015, 2);
-        while (displacement < distance) {
+        while ((displacement < distance) && opModeIsActive()) {
             findDisplacement();
             findError(distance);
             deltaT = System.currentTimeMillis() - pastTime;
@@ -901,6 +833,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             moveBackward(getProportion() + getIntegral() + getDerivative());
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -969,7 +902,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetIntegral();
         setInitialError(distance);
         setKValues(0.0008, 0.0000004, 0.5);
-        while (displacement < distance) {
+        while ((displacement < distance) && (opModeIsActive())) {
             findStrafeDisplacement();
             findError(distance);
             findDeltaT();
@@ -977,6 +910,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             tallyIntegral();
             telemetry.update();
             setPower(0,0,-1*(getProportion() + getIntegral() + getDerivative()));
+            idle();
         }
         setZero();
         getPercentTraveled(distance);
@@ -997,6 +931,235 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    //Color Sensor + Hitting the Jewel
 
+    public void hitJewel() throws InterruptedException {
+       String direction = pickDirection();
+       if (direction.equals("forward")) {
+            //park in safe zone
+            moveForwardPID(200);
+            setZero();
+            moveBackwardPID(200);
+        }
+        else if (direction.equals("backward")) {
+           moveBackwardPID(200);
+           setZero();
+           moveForwardPID(200);
+        }
+        raiseJewel();
+    }
+
+    public void hitJewelTurn() throws InterruptedException {
+        String direction = pickDirection();
+        if (direction.equals("forward")) {
+            //park in safe zone
+            turnLeftPID(20);
+            setZero();
+            turnRightPID(20);
+        }
+        else if (direction.equals("backward")) {
+            turnRightPID(20);
+            setZero();
+            turnLeftPID(20);
+        }
+        raiseJewel();
+    }
+
+    public String pickDirection(){
+        String jewelColor = simpleColorDetect();
+        if (alliance == 114){
+            if (jewelColor.equals("red")){
+                return "forward";
+            }
+            else if (jewelColor.equals("blue")){
+                return "backward";
+            }
+        }
+        else if (alliance == 98){
+            if (jewelColor.equals("blue")){
+                return "forward";
+            }
+            else if (jewelColor.equals("red")){
+                return "backward";
+            }
+        }
+        return "not functioning";
+    }
+
+    public String simpleColorDetect(){
+        double red = colorFront.red();
+        if (red > 18)
+            return "red";
+        else if (red < 10)
+            return "blue";
+        else if (colorRec < 4){
+            sleep(500);
+            colorRec++;
+            simpleColorDetect();
+        }
+        telemetry.addData("Color", "Not Found");
+        telemetry.update();
+        return "unknown";
+    }
+
+    public String simpleColorCompare(){
+        double red = colorFront.red();
+        sleep(500);
+        double blue = colorFront.blue();
+
+        if (red > blue + 6)
+            return "red";
+        else if (blue > red + 6)
+            return "blue";
+        else if (colorRec < 4){
+            colorRec++;
+            simpleColorCompare();
+        }
+        telemetry.addData("Color", "Not Found");
+        telemetry.update();
+        return "unknown";
+    }
+
+    public String avgColorDetect(){
+        double red = 0;
+        sleep(500);
+        for (int i = 0; i < 10; i++){
+            sleep(200);
+            red += colorFront.red();
+        }
+        red /= 10;
+        telemetry.addData("Red", red);
+        telemetry.update();
+
+        if (red > 18)
+            return "red";
+        else if (red < 10)
+            return "blue";
+        else if (colorRec < 1){
+            colorRec++;
+            avgColorDetect();
+        }
+        telemetry.addData("Color", "Not Found");
+        telemetry.update();
+        return "unknown";
+    }
+
+    public String avgColorCompare(){
+        double red = 0;
+        double blue = 0;
+        sleep(500);
+        for (int i = 0; i < 20; i++){
+            sleep(100);
+            if (i % 2 == 0)
+                red += colorFront.red();
+            if (i % 2 == 1)
+                blue += colorFront.blue();
+        }
+        red /= 10;
+        blue /= 10;
+
+        telemetry.addData("Red", red);
+        telemetry.addData("Blue", blue);
+        telemetry.update();
+
+        if (red > blue + 6)
+            return "red";
+        else if (blue > red + 6)
+            return "blue";
+        else if (colorRec < 1){
+            colorRec++;
+            avgColorCompare();
+        }
+
+        telemetry.addData("Color", "Not Found");
+        telemetry.update();
+        return "unknown";
+    }
 }
 
+/*
+                    Code Graveyard (R.I.P.)
+public String chooseColor(char c) throws InterruptedException {
+        //hitting blue
+        if (c == 114) {
+            if (getBlue(colorFront) < getBlue(colorBack)) {
+                telemetry.addData("hit", "forwards");
+                telemetry.update();
+                return "forwards";
+            } else if (getBlue(colorFront) > getBlue(colorBack)) {
+                telemetry.addData("hit", "backwards");
+                telemetry.update();
+                return "backwards";
+            } else {
+                sleep(1000);
+                if (recCount < 2)
+                    recCount++;
+                chooseColor(c);
+                telemetry.addData("ColorSensors", "broken");
+                telemetry.update();
+                return "broken";
+
+            }
+        }
+        //hitting red
+        if (c == 98) {
+            if (getRed(colorFront) < getRed(colorBack)) {
+                telemetry.addData("hit", "forwards");
+                telemetry.update();
+                return "forwards";
+            } else if (getRed(colorFront) > getRed(colorBack)) {
+                telemetry.addData("hit", "backwards");
+                telemetry.update();
+                return "backwards";
+            } else {
+                sleep(1000);
+                if (recCount < 2)
+                    recCount++;
+                chooseColor(c);
+                telemetry.addData("ColorSensors", "broken");
+                telemetry.update();
+                return "broken";
+            }
+        }
+        return "broken";
+    }
+
+    public String choseOneColor(char c) throws InterruptedException {
+        //hitting blue
+        if (c == 114) {
+            if (getRed(colorBack) < getBlue(colorBack)) {
+                telemetry.addData("hit", "backwards");
+                telemetry.update();
+                return "forwards";
+            } else if (getRed(colorBack) > getBlue(colorBack)) {
+                telemetry.addData("hit", "forwards");
+                telemetry.update();
+                return "backwards";
+            } else {
+                sleep(1000);
+                if (recCount < 2)
+                    recCount++;
+                chooseColor(c);
+            }
+        }
+        //hitting red
+        if (c == 98) {
+            if (getRed(colorBack) < getBlue(colorBack)) {
+                telemetry.addData("hit", "forwards");
+                telemetry.update();
+                return "forwards";
+            } else if (getRed(colorBack) > getBlue(colorBack)) {
+                telemetry.addData("hit", "backwards");
+                telemetry.update();
+                return "backwards";
+            } else {
+                sleep(1000);
+                if (recCount < 2)
+                    recCount++;
+                chooseColor(c);
+            }
+        }
+        return "broken";
+    }
+
+ */

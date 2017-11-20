@@ -30,6 +30,7 @@ public class HeadControlsTeleOp extends OpMode {
     private DcMotor FR;
     private DcMotor BL;
     private DcMotor BR;
+    private boolean braked;
 
     private DcMotor leftLiftSlide;
     private DcMotor rightLiftSlide;
@@ -100,6 +101,7 @@ public class HeadControlsTeleOp extends OpMode {
         relicGrabber        = hardwareMap.servo.get("relicGrabber");
         relicArm            = hardwareMap.servo.get("relicArm");
         halfSpeed           = false;
+        braked              = false;
         liftOut             = false;
         relicOut            = false;
         clampClosed         = false;
@@ -115,6 +117,11 @@ public class HeadControlsTeleOp extends OpMode {
 
         telemetry.addData("Initialization", "done");
         telemetry.update();
+
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     @Override
@@ -234,9 +241,30 @@ public class HeadControlsTeleOp extends OpMode {
         BR.setPower(getHalfSpeed()*(-getRightVelocity() - getLeftShoulder() + getRightShoulder()));
     }
 
+    //Has some potential for balancing
+    public void brake(){
+        if (gamepad2.left_bumper) {
+            if (!braked) {
+                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                braked = true;
+            }
+            else {
+                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                braked = false;
+            }
+        }
+    }
 
 
-    /* Methods for original clamp bot
+
+
+    /* Methods for original clamp bot (obsolete)
     //relic lift
     //Relic
     public void setArmPower() {

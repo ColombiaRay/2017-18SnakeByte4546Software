@@ -18,15 +18,14 @@ public class JewelHittingAutoRed extends AutoOpMode {
         sleep(2400);
         hitJewel();
         sleep(1000);
-        //Forward probably needs to be less, strafe perhaps more?
-        moveForward(-0.25, 250);
+        moveBackwardPID(250);
         sleep(2000);
-        moveStrafe(-0.5,300);
+        moveStrafeLeftPID(300);
         setZero();
         sleep(1000);
-        moveForward(-0.3,100);
-        tunnel.setBlocks(true);
+        moveBackwardPID(150);
+        //tunnel.setBlocks(true);
         sleep(1000);
-        tunnel.setBlocks(false);
+        //tunnel.setBlocks(false);
     }
 }

@@ -10,9 +10,9 @@ public class JewelHittingAutoBlue extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
+        setAlliance('b');
         telemetry.addData("Blue", "Ready");
         waitForStart();
-        setAlliance('b');
         //scanImage();
         moveForward(0.2,2000);
         sleep(1000);
