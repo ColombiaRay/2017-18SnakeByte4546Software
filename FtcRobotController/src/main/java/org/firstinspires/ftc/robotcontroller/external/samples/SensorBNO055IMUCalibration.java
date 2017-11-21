@@ -162,6 +162,7 @@ public class SensorBNO055IMUCalibration extends LinearOpMode
                 String filename = "AdafruitIMUCalibration.json";
                 File file = AppUtil.getInstance().getSettingsFile(filename);
                 ReadWriteFile.writeFile(file, calibrationData.serialize());
+
                 telemetry.log().add("saved to '%s'", filename);
 
                 // Wait for the button to be released

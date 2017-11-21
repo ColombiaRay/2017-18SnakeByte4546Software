@@ -3,15 +3,18 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /**
- * Created by raymo on 10/25/17.
+ * Created by raymo on 11/20/2017.
  */
+
 @Autonomous
-public class ColorTest extends AutoOpMode {
+public class AutoCryptoBoxTestRed extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        //lowerJewel();
-        avgColorCompare();
-        sleep(5000);
+        waitForStart();
+        moveForwardPID(275,7);
+        brake();
+        sleep(500);
+        moveStrafeLeftPID(400, 1);
     }
 }
