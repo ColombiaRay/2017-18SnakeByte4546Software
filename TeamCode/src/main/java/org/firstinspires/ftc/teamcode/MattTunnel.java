@@ -41,38 +41,45 @@ public class MattTunnel {
 
     }
 
-    public void toggleInTake(boolean isKeyPressed) {
+    public void toggleInTake(double isKeyPressed) {
         /**
          * Pseudocode:
          *
          *  spin intake motors
          */
 
-        if (isKeyPressed) {
+        if (isKeyPressed > 0.1) {
             inTake.setPower(1.0);
+            setBlocks(isKeyPressed);
+        }
+        else if(isKeyPressed < 0.1) {
+            inTake.setPower(-1.0);
+            releaseBlocks(-isKeyPressed);
         }
         else {
             inTake.setPower(0.0);
+            frontLeftTunnel.setPosition(.5);
+            backLeftTunnel.setPosition(.5);
+            frontRightTunnel.setPosition(.5);
+            backRightTunnel.setPosition(.5);
         }
     }
 
 
-    public void setBlocks(boolean isKeyPressed) {
-        if (isKeyPressed) {
-            frontLeftTunnel.setPosition(0);
-            backLeftTunnel.setPosition(0);
-            frontRightTunnel.setPosition(1.0);
-            backRightTunnel.setPosition(1.0);
-        }
+    public void setBlocks(double isKeyPressed) {
+
+            frontLeftTunnel.setPosition(1 - (isKeyPressed/2 + .5));
+            backLeftTunnel.setPosition(1 - (isKeyPressed/2 + .5));
+            frontRightTunnel.setPosition(isKeyPressed);
+            backRightTunnel.setPosition(isKeyPressed);
+
     }
 
-    public void releaseBlocks(boolean isKeyPressed) {
-        if (isKeyPressed) {
-            frontLeftTunnel.setPosition(1.0);
-            backLeftTunnel.setPosition(1.0);
-            frontRightTunnel.setPosition(0);
-            backRightTunnel.setPosition(0);
-        }
+    public void releaseBlocks(double isKeyPressed) {
+        frontLeftTunnel.setPosition(1 - (isKeyPressed/2 + .5));
+        backLeftTunnel.setPosition(1 - (isKeyPressed/2 + .5));
+        frontRightTunnel.setPosition(isKeyPressed);
+        backRightTunnel.setPosition(isKeyPressed);
     }
 
 
