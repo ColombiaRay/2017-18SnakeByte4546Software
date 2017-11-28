@@ -55,7 +55,7 @@ public class MattTunnel {
             setBlocks(stickPower);
         }
         else if(stickPower < -0.1) {
-            inTake.setPower(-stickPower);
+            inTake.setPower(stickPower);
             releaseBlocks(-stickPower);
         }
         else {
