@@ -12,11 +12,11 @@ public class AutoRedLeft extends AutoOpMode{
         waitForStart();
         setAlliance('r');
         //grabGlyph();
+        //scanImage();
         lowerJewel();
         sleep(2400);
         hitJewel();
         sleep(1000);
-        //Forward probably needs to be less, strafe perhaps more?
         moveForwardPID(250);
         sleep(1000);
         turnRightPID(90);

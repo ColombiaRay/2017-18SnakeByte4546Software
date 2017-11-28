@@ -429,6 +429,27 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+    public void strafeToCorrectColumn() throws InterruptedException {
+        if (cryptoboxKey.equals("left")){
+            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            setZero();
+            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            setZero();
+            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            setZero();
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            setZero();
+            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            setZero();
+        }
+        else{
+            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            setZero();
+        }
+    }
+
 
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
@@ -669,6 +690,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         pastTime = System.currentTimeMillis();
     }
 
+    public void resetAngIntegral()  {
+        angleIntegral = 0;
+    }
+
     public void tallyIntegral() {
         integral += deltaT * error;
     }
@@ -885,7 +910,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void turnRightPID(double angle) throws InterruptedException {
         setStartAngle();
-        resetIntegral();
+        resetAngIntegral();
         setInitialAngError(angle);
         //setKValues(0.002777, 0.000002, 0.1);
         setKValues(0.002777, 0.000002, 0.11);
@@ -907,7 +932,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     //Probably the best version of turnRightPID
     public void turnRightPID(double angle, double p, double i, double d) throws InterruptedException {
         setStartAngle();
-        resetIntegral();
+        resetAngIntegral();
         setInitialAngError(angle);
         //setKValues(0.002777, 0.000002, 0.1);
         setKValues(p, i, d);
@@ -929,7 +954,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void turnLeftPID(double angle) throws InterruptedException {
         setStartAngle();
-        resetIntegral();
+        resetAngIntegral();
         setInitialAngError(angle);
         setKValues(0.002777, 0.000015, 0.1);
         //setKValues(0.004, 0.000015, 3.0);
@@ -950,7 +975,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void turnLeftPID(double angle, double p, double i, double d) throws InterruptedException {
         setStartAngle();
-        resetIntegral();
+        resetAngIntegral();
         setInitialAngError(angle);
         setKValues(p, i, d);
         //setKValues(0.004, 0.000015, 3.0);
@@ -1020,9 +1045,9 @@ public abstract class AutoOpMode extends LinearOpMode {
         findAngDisplacement();
         findTrueAngError(0);
         if (angError >= 0.1) {
-            return -0.1;
+            return angError * 0.13;
         } else if (angError <= -0.1) {
-            return 0.1;
+            return angError * 0.13;
         }
         return 0;
     }
@@ -1038,14 +1063,16 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Straightens robot after it falls from balance board in auto
     public void straightenAfterDescent() throws InterruptedException {
-        double angularError = getGyroYaw() - initialAutoAngle;
-        if (angularError > 0){
+        telemetry.addData("ang Error", getGyroYaw());
+        telemetry.update();
+        sleep(1000);
+        if (getGyroYaw() > 1){
             //find good values
-            turnLeftPID(angularError, 0, 0, 0);
+            turnLeftPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
         }
-        else if (angularError < 0){
+        else if (getGyroYaw() < -1){
             //find good values
-            turnRightPID(angularError, 0, 0, 0);
+            turnRightPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
         }
     }
 
@@ -1105,6 +1132,30 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+    public void moveStrafeRightPID(int distance, double p, double i, double d) throws InterruptedException {
+        setStartStrafePos();
+        setStartAngle();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(p,i,d);
+        while ((displacement < distance) && (opModeIsActive())) {
+            findStrafeDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            telemetry.addData("Power", getProportion() + getIntegral() + getDerivative());
+            setPower(0, 0, (getProportion() + getIntegral() + getDerivative()));
+            idle();
+        }
+        setZero();
+        Log.e("Method", "MoveStrafeRightPID");
+        getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
+    }
+
     public void moveStrafeLeftPID(int distance) throws InterruptedException {
         setStartStrafePos();
         setStartAngle();
@@ -1122,6 +1173,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             idle();
         }
         setZero();
+        Log.e("Method", "MoveStrafeLeftPID");
         getPercentTraveled(distance);
         getStraightness();
         telemetry.update();
@@ -1149,6 +1201,30 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+    public void moveStrafeLeftPID(int distance, double p, double i, double d) throws InterruptedException {
+        setStartStrafePos();
+        setStartAngle();
+        resetIntegral();
+        setInitialError(distance);
+        setKValues(p,i,d);
+        while ((displacement < distance) && (opModeIsActive())) {
+            findStrafeDisplacement();
+            findError(distance);
+            findDeltaT();
+            findDeltaError();
+            tallyIntegral();
+            telemetry.update();
+            telemetry.addData("Power", getProportion() + getIntegral() + getDerivative());
+            setPower(0, 0, -(getProportion() + getIntegral() + getDerivative()));
+            idle();
+        }
+        setZero();
+        Log.e("Method", "MoveStrafeLeftPID");
+        getPercentTraveled(distance);
+        getStraightness();
+        telemetry.update();
+    }
+
     public void moveToColumn() throws InterruptedException {
         if (cryptoboxKey.equals("left")) {
             moveStrafeLeftPID(2000);
@@ -1163,6 +1239,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     //Color Sensor + Hitting the Jewel
 
     public void hitJewel() throws InterruptedException {
+        telemetry.addData("ColorSensor", "Reading");
+        telemetry.update();
         String direction = pickDirection();
         if (direction.equals("forward")) {
             //park in safe zone
@@ -1178,6 +1256,9 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void hitJewelTurn() throws InterruptedException {
+        telemetry.addData("ColorSensor", "Reading");
+        telemetry.update();
+        sleep(300);
         String direction = pickDirection();
         if (direction.equals("forward")) {
             //park in safe zone
@@ -1292,11 +1373,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
 
         if (red > blue + 3) {
-            Log.d("Red Certainty", "" + (red - blue));
+            Log.e("Red Certainty", "" + (red - blue));
             return "red";
         }
         else if (blue > red + 3) {
-            Log.d("Blue Certainty", "" + (red - blue));
+            Log.e("Blue Certainty", "" + (red - blue));
             return "blue";
         }
         else if (colorRec < 1) {
@@ -1304,7 +1385,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             avgColorCompare();
         }
 
-        Log.d("Color Detection", "Failed");
+        Log.e("Color Detection", "Failed");
         telemetry.addData("Color", "Not Found");
         telemetry.update();
         return "unknown";
@@ -1317,6 +1398,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Range", jewelDistance.getDistance(DistanceUnit.CM));
         telemetry.update();
     }
+
+
 }
 
 /*

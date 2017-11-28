@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -40,10 +41,10 @@ public class HeadControlsTeleOp extends OpMode {
     private DcMotor liftLeft;
     private DcMotor liftRight;
     private DcMotor inTake;
-    private Servo frontRightTunnel;
-    private Servo backRightTunnel;
-    private Servo frontLeftTunnel;
-    private Servo backLeftTunnel;
+    private CRServo frontRightTunnel;
+    private CRServo backRightTunnel;
+    private CRServo frontLeftTunnel;
+    private CRServo backLeftTunnel;
 
     private Servo leftMani;
     private Servo rightMani;
@@ -81,25 +82,25 @@ public class HeadControlsTeleOp extends OpMode {
         BL                  = hardwareMap.dcMotor.get("BL");
         //leftArm             = hardwareMap.servo.get("LRelicArm");
         //rightArm            = hardwareMap.servo.get("RRelicArm");
-        leftRelic           = hardwareMap.servo.get("LRelic");
-        rightRelic          = hardwareMap.servo.get("RRelic");
-        leftMani            = hardwareMap.servo.get("LMani");
-        rightMani           = hardwareMap.servo.get("RMani");
-        leftLiftSlide       = hardwareMap.dcMotor.get("LSlide");
-        rightLiftSlide      = hardwareMap.dcMotor.get("RSlide");
-        liftMani            = hardwareMap.dcMotor.get("liftMani");
+        //leftRelic           = hardwareMap.servo.get("LRelic");
+        //rightRelic          = hardwareMap.servo.get("RRelic");
+        //leftMani            = hardwareMap.servo.get("LMani");
+        //rightMani           = hardwareMap.servo.get("RMani");
+        //leftLiftSlide       = hardwareMap.dcMotor.get("LSlide");
+        //rightLiftSlide      = hardwareMap.dcMotor.get("RSlide");
+        //liftMani            = hardwareMap.dcMotor.get("liftMani");
         jewelHitter         = hardwareMap.servo.get("jewelhitter");
         liftLeft            = hardwareMap.dcMotor.get("leftLift");
         liftRight           = hardwareMap.dcMotor.get("rightLift");
         inTake              = hardwareMap.dcMotor.get("intake");
 
-        frontRightTunnel    = hardwareMap.servo.get("frontRightTunnel");
-        backRightTunnel     = hardwareMap.servo.get("frontRightTunnel");
-        frontLeftTunnel     = hardwareMap.servo.get("frontRightTunnel");
-        backLeftTunnel      = hardwareMap.servo.get("frontRightTunnel");
+        frontRightTunnel    = hardwareMap.crservo.get("FRT");
+        //backRightTunnel     = hardwareMap.servo.get("BRT");
+        frontLeftTunnel     = hardwareMap.crservo.get("FLT");
+        //backLeftTunnel      = hardwareMap.servo.get("BlT");
 
-        relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        relicArm            = hardwareMap.servo.get("relicArm");
+        //relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        //relicArm            = hardwareMap.servo.get("relicArm");
         halfSpeed           = false;
         braked              = false;
         liftOut             = false;
@@ -108,11 +109,11 @@ public class HeadControlsTeleOp extends OpMode {
         rightMotion         = 0;
         leftMotion          = 0;
         tunnel              = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        relicClamp          = hardwareMap.servo.get("relicClamp");
+        //relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        //relicClamp          = hardwareMap.servo.get("relicClamp");
 
-        rightMani.setDirection(Servo.Direction.FORWARD);
-        leftMani.setDirection(Servo.Direction.REVERSE);
+        //rightMani.setDirection(Servo.Direction.FORWARD);
+        //leftMani.setDirection(Servo.Direction.REVERSE);
         jewelHitter.setDirection(Servo.Direction.REVERSE);
 
         telemetry.addData("Initialization", "done");
@@ -126,16 +127,15 @@ public class HeadControlsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        grabRelic();
-        lowerRelicArm();
+        //grabRelic();
+        //lowerRelicArm();
         setPower();
         toggleHalfSpeed();
-        useJewel();
+        //useJewel();
         tunnel.toggleInTake(gamepad2.left_stick_y);
-        tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
-        brake();
-        jewelHitter.setPosition(0.54);
-        telemetry.addData("JewelHitter", jewelHitter.getPosition());
+        //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
+        //jewelHitter.setPosition(0.54);
+        //telemetry.addData("JewelHitter", jewelHitter.getPosition());
 
     }
 
@@ -234,9 +234,9 @@ public class HeadControlsTeleOp extends OpMode {
 
 
     public void setPower() {
-        FL.setPower(getHalfSpeed()*(getLeftVelocity() + getLeftShoulder() - getRightShoulder()));
+        FL.setPower(getHalfSpeed()*(getLeftVelocity() - getLeftShoulder() + getRightShoulder()));
         FR.setPower(getHalfSpeed()*(-getRightVelocity() + getLeftShoulder() - getRightShoulder()));
-        BL.setPower(getHalfSpeed()*(getLeftVelocity() - getLeftShoulder() + getRightShoulder()));
+        BL.setPower(getHalfSpeed()*(getLeftVelocity() + getLeftShoulder() - getRightShoulder()));
         BR.setPower(getHalfSpeed()*(-getRightVelocity() - getLeftShoulder() + getRightShoulder()));
     }
 

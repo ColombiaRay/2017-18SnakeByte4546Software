@@ -3,16 +3,19 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /**
- * Created by raymo on 11/20/2017.
+ * Created by raymo on 11/27/2017.
  */
 
 @Autonomous
-public class JewelHittingTest extends AutoOpMode {
+public class InitialAutoActionsTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        setAlliance('b');
         waitForStart();
+        scanImage();
         lowerJewel();
+        sleep(500);
+        hitJewel();
+        sleep(5000);
     }
 }

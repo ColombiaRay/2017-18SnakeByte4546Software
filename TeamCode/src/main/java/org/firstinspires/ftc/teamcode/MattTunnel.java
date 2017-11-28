@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
  * Created by rubenr on 11/9/17.
  */
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -13,13 +14,14 @@ public class MattTunnel {
     private DcMotor liftLeft;
     private DcMotor liftRight;
     private DcMotor inTake;
-    private Servo frontRightTunnel;
-    private Servo backRightTunnel;
-    private Servo frontLeftTunnel;
-    private Servo backLeftTunnel;
+    private CRServo frontRightTunnel;
+    private CRServo backRightTunnel;
+    private CRServo frontLeftTunnel;
+    private CRServo backLeftTunnel;
 
 
-    public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT, Servo fRT, Servo bRT, Servo fLT, Servo blT) {
+
+    public MattTunnel(DcMotor ll, DcMotor rl, DcMotor iT, CRServo fRT, CRServo bRT, CRServo fLT, CRServo blT) {
         liftLeft         = ll;
         liftRight        = rl;
         inTake           = iT;
@@ -30,7 +32,7 @@ public class MattTunnel {
 
     }
 
-    public MattTunnel(DcMotor iT, Servo fRT, Servo bRT, Servo fLT, Servo blT) {
+    public MattTunnel(DcMotor iT, CRServo fRT, CRServo bRT, CRServo fLT, CRServo blT) {
         liftLeft         = null;
         liftRight        = null;
         inTake           = iT;
@@ -49,37 +51,37 @@ public class MattTunnel {
          */
 
         if (stickPower > 0.1) {
-            inTake.setPower(1.0);
+            inTake.setPower(stickPower);
             setBlocks(stickPower);
         }
         else if(stickPower < -0.1) {
-            inTake.setPower(-1.0);
+            inTake.setPower(-stickPower);
             releaseBlocks(-stickPower);
         }
         else {
             inTake.setPower(0.0);
-            frontLeftTunnel.setPosition(.5);
-            backLeftTunnel.setPosition(.5);
-            frontRightTunnel.setPosition(.5);
-            backRightTunnel.setPosition(.5);
+            frontLeftTunnel.setPower(0);
+            //backLeftTunnel.setPosition(.5);
+            frontRightTunnel.setPower(0);
+            //backRightTunnel.setPosition(.5);
         }
     }
 
 
     public void setBlocks(double stickPower) {
 
-            frontLeftTunnel.setPosition(1 - (stickPower/2 + .5));
-            backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
-            frontRightTunnel.setPosition(stickPower);
-            backRightTunnel.setPosition(stickPower);
+            frontLeftTunnel.setPower(0.5);
+            //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
+            frontRightTunnel.setPower(-0.5);
+            //backRightTunnel.setPosition((stickPower/2 + .5));
 
     }
 
     public void releaseBlocks(double stickPower) {
-        frontLeftTunnel.setPosition(1 - (stickPower/2 + .5));
-        backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
-        frontRightTunnel.setPosition(stickPower);
-        backRightTunnel.setPosition(stickPower);
+        frontLeftTunnel.setPower(-0.5);
+        //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
+        frontRightTunnel.setPower(0.5);
+        //backRightTunnel.setPosition((stickPower/2 + .5));
     }
 
 
@@ -99,11 +101,13 @@ public class MattTunnel {
         }
     }
 
+
+
     public void lowerLift(double joy) {
         if (joy > 0.05) {
             liftLeft.setPower(joy); // Edit later
             liftRight.setPower(-joy);
         }
-
     }
+
 }
