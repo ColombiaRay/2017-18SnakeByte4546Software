@@ -13,15 +13,13 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
         initialize();
         setInitialAngle();
         waitForStart();
-        useIntake();
         scanImage();
-        hitJewel();
-        sleep(2000);
+        moveForwardPID(325,0.001, 0.0000007, 0.5);
         stopMovement();
-        strafeToCorrectColumn();
+        strafeToCorrectColumnRed();
 
         /*
-        
+
         moveStrafe(-0.6, 300);
         //moveStrafeLeftPID(300, 0.0023, 0.0000015, 0.2);
         stopMovement();

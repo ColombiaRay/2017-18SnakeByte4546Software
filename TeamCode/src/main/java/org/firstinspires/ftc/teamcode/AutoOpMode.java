@@ -427,13 +427,11 @@ public abstract class AutoOpMode extends LinearOpMode {
                 }
             }
         }
-        telemetry.addData("VuMark", "NotDetected");
-        telemetry.update();
     }
 
-    public void strafeToCorrectColumn() throws InterruptedException {
+    public void strafeToCorrectColumnRed() throws InterruptedException {
         if (cryptoboxKey.equals("left")){
-            moveStrafe(-0.6, 100);
+            moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
@@ -441,18 +439,40 @@ public abstract class AutoOpMode extends LinearOpMode {
             setZero();
         }
         else if (cryptoboxKey.equals("center")){
-            moveStrafe(-0.6, 100);
+            moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
         }
         else{
-            moveStrafe(-0.6, 100);
+            moveStrafe(-0.6, 140);
             setZero();
         }
-        moveForwardPID(150,0.001, 0.0000007, 0.5);
+        moveForwardPID(100,0.002, 0.0000007, 0.5);
     }
 
+    public void strafeToCorrectColumnBlue() throws InterruptedException {
+        if (cryptoboxKey.equals("right")){
+            //Make the first movement slightly more and the second movement decently more
+            moveStrafe(-0.6, 140);
+            setZero();
+            moveStrafe(-0.6, 270);
+            setZero();
+            moveStrafe(-0.6, 270);
+            setZero();
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafe(-0.6, 140);
+            setZero();
+            moveStrafe(-0.6, 270);
+            setZero();
+        }
+        else{
+            moveStrafe(-0.6, 140);
+            setZero();
+        }
+        moveBackwardPID(150,0.001, 0.0000007, 0.5);
+    }
 
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
