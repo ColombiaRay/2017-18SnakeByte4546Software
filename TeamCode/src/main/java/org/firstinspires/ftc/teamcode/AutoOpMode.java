@@ -48,7 +48,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     ColorSensor colorFront;
     ColorSensor colorBack;
     int recCount = 0;
-    String cryptoboxKey;
+    String cryptoboxKey = "None";
     VuforiaLocalizer.Parameters parameters;
     char alliance;
     long closeTime;
@@ -81,6 +81,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     private int colorRec;
     private DistanceSensor jewelDistance;
     private double initialAutoAngle;
+    private boolean gateOpen;
+    private Servo gateServo;
 
 
     public void initialize() throws InterruptedException {
@@ -431,23 +433,24 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void strafeToCorrectColumn() throws InterruptedException {
         if (cryptoboxKey.equals("left")){
-            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 100);
             setZero();
-            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 270);
             setZero();
-            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 270);
             setZero();
         }
         else if (cryptoboxKey.equals("center")){
-            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 100);
             setZero();
-            moveStrafeLeftPID(400, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 270);
             setZero();
         }
         else{
-            moveStrafeLeftPID(300, 0.0014, 0.0000015, 0.5);
+            moveStrafe(-0.6, 100);
             setZero();
         }
+        moveForwardPID(150,0.001, 0.0000007, 0.5);
     }
 
 
@@ -1065,14 +1068,15 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void straightenAfterDescent() throws InterruptedException {
         telemetry.addData("ang Error", getGyroYaw());
         telemetry.update();
-        sleep(1000);
         if (getGyroYaw() > 1){
             //find good values
-            turnLeftPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
+            //turnLeftPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
+            turn(-0.3, getGyroYaw());
         }
         else if (getGyroYaw() < -1){
             //find good values
-            turnRightPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
+            //turnRightPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
+            turn(0.3, getGyroYaw());
         }
     }
 
@@ -1238,6 +1242,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Color Sensor + Hitting the Jewel
 
+    /*
     public void hitJewel() throws InterruptedException {
         telemetry.addData("ColorSensor", "Reading");
         telemetry.update();
@@ -1253,6 +1258,21 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveForwardPID(200,7);
         }
         raiseJewel();
+    }
+    */
+
+    public void hitJewel() throws InterruptedException {
+        telemetry.addData("ColorSensor", "Reading");
+        telemetry.update();
+        String direction = pickDirection();
+        if (direction.equals("forward")) {
+            //park in safe zone
+            moveForwardPID(365,0.001, 0.0000007, 0.5);
+        } else if (direction.equals("backward")) {
+            moveBackwardPID(120,0.001, 0.0000007, 0.5);
+            setZero();
+            moveForwardPID(365,0.001, 0.0000007, 0.5);
+        }
     }
 
     public void hitJewelTurn() throws InterruptedException {

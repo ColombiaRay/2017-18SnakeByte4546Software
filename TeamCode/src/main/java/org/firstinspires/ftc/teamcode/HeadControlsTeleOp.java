@@ -62,6 +62,8 @@ public class HeadControlsTeleOp extends OpMode {
     private final int DELAYTOGGLE = 500;
     private boolean relicOut;
     private boolean clampClosed;
+    private boolean gateOpen;
+    private Servo gateServo;
 
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
@@ -90,14 +92,15 @@ public class HeadControlsTeleOp extends OpMode {
         //rightLiftSlide      = hardwareMap.dcMotor.get("RSlide");
         //liftMani            = hardwareMap.dcMotor.get("liftMani");
         jewelHitter         = hardwareMap.servo.get("jewelhitter");
-        liftLeft            = hardwareMap.dcMotor.get("leftLift");
-        liftRight           = hardwareMap.dcMotor.get("rightLift");
+        //liftLeft            = hardwareMap.dcMotor.get("leftLift");
+        //liftRight           = hardwareMap.dcMotor.get("rightLift");
         inTake              = hardwareMap.dcMotor.get("intake");
 
         frontRightTunnel    = hardwareMap.crservo.get("FRT");
         //backRightTunnel     = hardwareMap.servo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
         //backLeftTunnel      = hardwareMap.servo.get("BlT");
+        //gateServo           = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
         //relicArm            = hardwareMap.servo.get("relicArm");
@@ -106,6 +109,7 @@ public class HeadControlsTeleOp extends OpMode {
         liftOut             = false;
         relicOut            = false;
         clampClosed         = false;
+        gateOpen            = false;
         rightMotion         = 0;
         leftMotion          = 0;
         tunnel              = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
@@ -189,6 +193,7 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+
     public double getRightShoulder()
     {
         if (gamepad1.right_bumper)
@@ -239,6 +244,7 @@ public class HeadControlsTeleOp extends OpMode {
         BL.setPower(getHalfSpeed()*(getLeftVelocity() + getLeftShoulder() - getRightShoulder()));
         BR.setPower(getHalfSpeed()*(-getRightVelocity() - getLeftShoulder() + getRightShoulder()));
     }
+
 
     //Has some potential for balancing
     public void brake(){

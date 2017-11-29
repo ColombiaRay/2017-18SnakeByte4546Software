@@ -51,12 +51,12 @@ public class MattTunnel {
          */
 
         if (stickPower > 0.1) {
-            inTake.setPower(stickPower);
-            setBlocks(stickPower);
+            inTake.setPower(-stickPower);
+            setBlocks();
         }
         else if(stickPower < -0.1) {
-            inTake.setPower(-stickPower);
-            releaseBlocks(-stickPower);
+            inTake.setPower(stickPower);
+            releaseBlocks();
         }
         else {
             inTake.setPower(0.0);
@@ -68,7 +68,7 @@ public class MattTunnel {
     }
 
 
-    public void setBlocks(double stickPower) {
+    public void setBlocks() {
 
             frontLeftTunnel.setPower(0.5);
             //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
@@ -77,13 +77,12 @@ public class MattTunnel {
 
     }
 
-    public void releaseBlocks(double stickPower) {
+    public void releaseBlocks() {
         frontLeftTunnel.setPower(-0.5);
         //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
         frontRightTunnel.setPower(0.5);
         //backRightTunnel.setPosition((stickPower/2 + .5));
     }
-
 
 
     public void manipulateLift(double joyStick) {
