@@ -65,6 +65,9 @@ public class HeadControlsTeleOp extends OpMode {
     private boolean gateOpen;
     private Servo gateServo;
 
+    // added 11/30- for lift motor extend/retract
+    private DcMotor relicLift;
+
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
 
@@ -115,6 +118,8 @@ public class HeadControlsTeleOp extends OpMode {
         tunnel              = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
         //relicClamp          = hardwareMap.servo.get("relicClamp");
+
+        relicLift           = hardwareMap.dcMotor.get("relicLift");
 
         //rightMani.setDirection(Servo.Direction.FORWARD);
         //leftMani.setDirection(Servo.Direction.REVERSE);
@@ -229,6 +234,16 @@ public class HeadControlsTeleOp extends OpMode {
         }
         else {
             relicArm.setPosition(0.5);
+        }
+    }
+
+    public void manipLift() {
+        if (gamepad2.dpad_up) {
+            relicLift.setPower(1);
+        } else if (gamepad2.dpad_down)
+            relicLift.setPower(-1);
+        else {
+            relicLift.setPower(0);
         }
     }
 
