@@ -490,8 +490,17 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void useIntake() {
         double intakeTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - intakeTime < 30000) && (opModeIsActive())) {
+        while ((System.currentTimeMillis() - intakeTime < 1000) && (opModeIsActive())) {
             intakeMotor.setPower(-1);
+            idle();
+        }
+        intakeMotor.setPower(0);
+    }
+
+    public void useIntakeAsOuttake(){
+        double intakeTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - intakeTime < 1000) && (opModeIsActive())) {
+            intakeMotor.setPower(1);
             idle();
         }
         intakeMotor.setPower(0);
