@@ -106,7 +106,7 @@ public class HeadControlsTeleOp extends OpMode {
         //gateServo           = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        //relicArm            = hardwareMap.servo.get("relicArm");
+        relicArm            = hardwareMap.servo.get("relicArm");
         halfSpeed           = false;
         braked              = false;
         liftOut             = false;
@@ -115,8 +115,8 @@ public class HeadControlsTeleOp extends OpMode {
         gateOpen            = false;
         rightMotion         = 0;
         leftMotion          = 0;
-        tunnel              = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        //relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
+        relicGrabber        = hardwareMap.servo.get("relicGrabber");
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
         relicLift           = hardwareMap.dcMotor.get("relicLift");
@@ -136,15 +136,18 @@ public class HeadControlsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        //grabRelic();
-        //lowerRelicArm();
+        grabRelic();
+        lowerRelicArm();
         setPower();
         toggleHalfSpeed();
         //useJewel();
         tunnel.toggleInTake(gamepad2.left_stick_y);
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
-        //jewelHitter.setPosition(0.54);
-        //telemetry.addData("JewelHitter", jewelHitter.getPosition());
+        //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
+        telemetry.addData("Jewel Arm Position", relicGrabber.getPosition());
+        telemetry.addData("JewelHitter", jewelHitter.getPosition());
+        telemetry.update();
+        manipLift();
 
     }
 
@@ -215,7 +218,7 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void grabRelic(){
         if (gamepad2.right_trigger > 0.1) {
-            relicGrabber.setPosition(0.7);
+            relicGrabber.setPosition(1);
         }
         else if (gamepad2.left_trigger > 0.1) {
             relicGrabber.setPosition(0.3);
@@ -230,7 +233,7 @@ public class HeadControlsTeleOp extends OpMode {
             relicArm.setPosition(0.3);
         }
         else if (gamepad2.left_bumper) {
-            relicArm.setPosition(0.7);
+            relicArm.setPosition(1);
         }
         else {
             relicArm.setPosition(0.5);
@@ -239,9 +242,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void manipLift() {
         if (gamepad2.dpad_up) {
-            relicLift.setPower(1);
-        } else if (gamepad2.dpad_down)
             relicLift.setPower(-1);
+        } else if (gamepad2.dpad_down)
+            relicLift.setPower(1);
         else {
             relicLift.setPower(0);
         }
