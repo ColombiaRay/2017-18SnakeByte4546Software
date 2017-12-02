@@ -16,7 +16,6 @@ public class JewelHittingAutoRed extends AutoOpMode {
         //grabGlyph();
         lowerJewel();
         sleep(2400);
-        hitJewel();
         sleep(1000);
         moveBackwardPID(250);
         sleep(2000);

@@ -11,8 +11,9 @@ public class JewelHittingTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        setAlliance('b');
+        setAlliance('r');
         waitForStart();
         lowerJewel();
+        knockJewel();
     }
 }

@@ -61,9 +61,9 @@ public class MattTunnel {
         else {
             inTake.setPower(0.0);
             frontLeftTunnel.setPower(0);
-            //backLeftTunnel.setPosition(.5);
+            backLeftTunnel.setPower(0);
             frontRightTunnel.setPower(0);
-            //backRightTunnel.setPosition(.5);
+            backRightTunnel.setPower(0);
         }
     }
 
@@ -71,17 +71,17 @@ public class MattTunnel {
     public void setBlocks() {
 
             frontLeftTunnel.setPower(0.5);
-            //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
+            backLeftTunnel.setPower(0.5);
             frontRightTunnel.setPower(-0.5);
-            //backRightTunnel.setPosition((stickPower/2 + .5));
+            backRightTunnel.setPower(0.5);
 
     }
 
     public void releaseBlocks() {
         frontLeftTunnel.setPower(-0.5);
-        //backLeftTunnel.setPosition(1 - (stickPower/2 + .5));
+        backLeftTunnel.setPower(-0.5);
         frontRightTunnel.setPower(0.5);
-        //backRightTunnel.setPosition((stickPower/2 + .5));
+        backRightTunnel.setPower(-0.5);
     }
 
 

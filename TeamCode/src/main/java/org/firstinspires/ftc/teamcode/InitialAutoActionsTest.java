@@ -15,7 +15,6 @@ public class InitialAutoActionsTest extends AutoOpMode {
         scanImage();
         lowerJewel();
         sleep(500);
-        hitJewel();
         sleep(5000);
     }
 }

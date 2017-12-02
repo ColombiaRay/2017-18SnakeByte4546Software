@@ -15,7 +15,6 @@ public class AutoRedLeft extends AutoOpMode{
         //scanImage();
         lowerJewel();
         sleep(2400);
-        hitJewel();
         sleep(1000);
         moveForwardPID(250);
         sleep(1000);

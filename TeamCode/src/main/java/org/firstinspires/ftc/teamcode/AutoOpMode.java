@@ -8,6 +8,7 @@ import android.view.View;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -40,10 +41,13 @@ public abstract class AutoOpMode extends LinearOpMode {
     Servo leftMani;
     Servo rightMani;
     Servo jewelHitter;
+    Servo jewelKnocker;
+    Servo gate;
     Servo leftArm;
     Servo rightArm;
     Servo leftRelic;
     Servo rightRelic;
+
     BNO055IMU imu;
     ColorSensor colorFront;
     ColorSensor colorBack;
@@ -53,6 +57,10 @@ public abstract class AutoOpMode extends LinearOpMode {
     char alliance;
     long closeTime;
     Servo RelicGrabber;
+    CRServo frontRightTunnel;
+    CRServo backRightTunnel;
+    CRServo frontLeftTunnel;
+    CRServo backLeftTunnel;
     private double currentTime;
     private double pastTime;
     private double integral;
@@ -76,7 +84,6 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double strafeError;
     private double strafeDisplacement;
     private double previousStrafeError;
-    private DcMotor intakeMotor;
     private double time;
     private int colorRec;
     private DistanceSensor jewelDistance;
@@ -94,7 +101,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         FR = hardwareMap.dcMotor.get("FR");
         BR = hardwareMap.dcMotor.get("BR");
         BL = hardwareMap.dcMotor.get("BL");
-        intakeMotor = hardwareMap.dcMotor.get("intake");
         FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -115,9 +121,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
         liftMani = hardwareMap.dcMotor.get("liftMani");
         */
+        frontRightTunnel    = hardwareMap.crservo.get("FRT");
+        backRightTunnel     = hardwareMap.crservo.get("BRT");
+        frontLeftTunnel     = hardwareMap.crservo.get("FLT");
+        backLeftTunnel      = hardwareMap.crservo.get("BLT");
 
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
+
+        jewelKnocker = hardwareMap.servo.get("jewelknocker");
+
+        gate = hardwareMap.servo.get("gate");
 
         //gyro init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -228,11 +242,20 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void lowerJewel() throws InterruptedException {
-        jewelHitter.setPosition(0.54);
+        jewelKnocker.setPosition(0.55);
+        sleep(1000);
+        while (jewelHitter.getPosition() > 0.65) {
+            jewelHitter.setPosition(jewelHitter.getPosition() - 0.04);
+            sleep(50);
+        }
+
     }
 
     public void raiseJewel() throws InterruptedException {
-        jewelHitter.setPosition(1);
+        while (jewelHitter.getPosition() < 1) {
+            jewelHitter.setPosition(jewelHitter.getPosition() + 0.04);
+            sleep(50);
+        }
     }
 
     public void setAlliance(char c) throws InterruptedException {
@@ -430,29 +453,29 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void strafeToCorrectColumnRed() throws InterruptedException {
-        if (cryptoboxKey.equals("left")){
+        if (cryptoboxKey.equals("left")) {
             moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
-        }
-        else if (cryptoboxKey.equals("center")){
+        } else if (cryptoboxKey.equals("center")) {
             moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
-        }
-        else{
-            moveStrafe(-0.6, 140);
+        } else {
+            moveStrafe(-0.6, 170);
             setZero();
         }
-        moveForwardPID(100,0.002, 0.0000007, 0.5);
+        expelGlyphs(2000);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        moveBackwardPID(150, 0.003, 0.0000012, 0.5);
     }
 
     public void strafeToCorrectColumnBlue() throws InterruptedException {
-        if (cryptoboxKey.equals("right")){
+        if (cryptoboxKey.equals("right")) {
             //Make the first movement slightly more and the second movement decently more
             moveStrafe(-0.6, 140);
             setZero();
@@ -460,18 +483,16 @@ public abstract class AutoOpMode extends LinearOpMode {
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
-        }
-        else if (cryptoboxKey.equals("center")){
+        } else if (cryptoboxKey.equals("center")) {
             moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
             setZero();
-        }
-        else{
+        } else {
             moveStrafe(-0.6, 140);
             setZero();
         }
-        moveBackwardPID(150,0.001, 0.0000007, 0.5);
+        moveBackwardPID(150, 0.001, 0.0000007, 0.5);
     }
 
     /*
@@ -488,23 +509,6 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
     */
 
-    public void useIntake() {
-        double intakeTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - intakeTime < 1000) && (opModeIsActive())) {
-            intakeMotor.setPower(-1);
-            idle();
-        }
-        intakeMotor.setPower(0);
-    }
-
-    public void useIntakeAsOuttake(){
-        double intakeTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - intakeTime < 1000) && (opModeIsActive())) {
-            intakeMotor.setPower(1);
-            idle();
-        }
-        intakeMotor.setPower(0);
-    }
 
     public void grabGlyph() throws InterruptedException {
         closeTime = System.currentTimeMillis();
@@ -722,7 +726,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         pastTime = System.currentTimeMillis();
     }
 
-    public void resetAngIntegral()  {
+    public void resetAngIntegral() {
         angleIntegral = 0;
     }
 
@@ -778,7 +782,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void stopMovement() throws InterruptedException {
-        setPower(0,0,0);
+        setPower(0, 0, 0);
         sleep(300);
     }
 
@@ -1097,12 +1101,11 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void straightenAfterDescent() throws InterruptedException {
         telemetry.addData("ang Error", getGyroYaw());
         telemetry.update();
-        if (getGyroYaw() > 1){
+        if (getGyroYaw() > 1) {
             //find good values
             //turnLeftPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
             turn(-0.3, getGyroYaw());
-        }
-        else if (getGyroYaw() < -1){
+        } else if (getGyroYaw() < -1) {
             //find good values
             //turnRightPID(Math.abs(getGyroYaw()), 0.003777, 0.000009, 0.11);
             turn(0.3, getGyroYaw());
@@ -1170,7 +1173,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(p,i,d);
+        setKValues(p, i, d);
         while ((displacement < distance) && (opModeIsActive())) {
             findStrafeDisplacement();
             findError(distance);
@@ -1239,7 +1242,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         resetIntegral();
         setInitialError(distance);
-        setKValues(p,i,d);
+        setKValues(p, i, d);
         while ((displacement < distance) && (opModeIsActive())) {
             findStrafeDisplacement();
             findError(distance);
@@ -1290,37 +1293,49 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
     */
 
-    public void hitJewel() throws InterruptedException {
-        telemetry.addData("ColorSensor", "Reading");
-        telemetry.update();
-        String direction = pickDirection();
-        if (direction.equals("forward")) {
-            //park in safe zone
-            moveForwardPID(365,0.001, 0.0000007, 0.5);
-        } else if (direction.equals("backward")) {
-            moveBackwardPID(120,0.001, 0.0000007, 0.5);
-            setZero();
-            moveForwardPID(365,0.001, 0.0000007, 0.5);
+    public void loadTunnel(int time){
+        closeGate();
+        sleep(500);
+        double startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - startTime < time) {
+            frontLeftTunnel.setPower(0.5);
+            backLeftTunnel.setPower(0.5);
+            frontRightTunnel.setPower(-0.5);
+            backRightTunnel.setPower(0.5);
         }
     }
 
-    public void hitJewelTurn() throws InterruptedException {
-        telemetry.addData("ColorSensor", "Reading");
-        telemetry.update();
-        sleep(300);
+    public void expelGlyphs(int time){
+        raiseGate();
+        double startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - startTime < time) {
+            frontLeftTunnel.setPower(0.5);
+            backLeftTunnel.setPower(0.5);
+            frontRightTunnel.setPower(-0.5);
+            backRightTunnel.setPower(0.5);
+        }
+        frontLeftTunnel.setPower(0);
+        backLeftTunnel.setPower(0);
+        frontRightTunnel.setPower(0);
+        backRightTunnel.setPower(0);
+        raiseGate();
+    }
+
+    public void knockJewel() throws InterruptedException {
         String direction = pickDirection();
         if (direction.equals("forward")) {
-            //park in safe zone
-            turnLeftPID(20);
-            setZero();
-            turnRightPID(20);
+            jewelKnocker.setPosition(0.85);
+            sleep(500);
         } else if (direction.equals("backward")) {
-            turnRightPID(20);
-            setZero();
-            turnLeftPID(20);
+            jewelKnocker.setPosition(0.25);
+            sleep(500);
         }
         raiseJewel();
+        sleep(1000);
+        jewelKnocker.setPosition(0.25);
+        sleep(500);
     }
+
 
     public String pickDirection() throws InterruptedException {
         String jewelColor = avgColorCompare();
@@ -1424,12 +1439,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         if (red > blue + 3) {
             Log.e("Red Certainty", "" + (red - blue));
             return "red";
-        }
-        else if (blue > red + 3) {
+        } else if (red + 3 < blue) {
             Log.e("Blue Certainty", "" + (red - blue));
             return "blue";
-        }
-        else if (colorRec < 1) {
+        } else if (colorRec < 2) {
             colorRec++;
             avgColorCompare();
         }
@@ -1448,6 +1461,16 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
+
+//Gate on tunnel
+
+    public void closeGate() {
+        gate.setPosition(0.35);
+    }
+
+    public void raiseGate(){
+        gate.setPosition(0.7);
+    }
 
 }
 
@@ -1536,4 +1559,35 @@ public String chooseColor(char c) throws InterruptedException {
         return "broken";
     }
 
+    public void hitJewel() throws InterruptedException {
+        telemetry.addData("ColorSensor", "Reading");
+        telemetry.update();
+        String direction = pickDirection();
+        if (direction.equals("forward")) {
+            //park in safe zone
+            moveForwardPID(365,0.001, 0.0000007, 0.5);
+        } else if (direction.equals("backward")) {
+            moveBackwardPID(120,0.001, 0.0000007, 0.5);
+            setZero();
+            moveForwardPID(365,0.001, 0.0000007, 0.5);
+        }
+    }
+
+    public void hitJewelTurn() throws InterruptedException {
+        telemetry.addData("ColorSensor", "Reading");
+        telemetry.update();
+        sleep(300);
+        String direction = pickDirection();
+        if (direction.equals("forward")) {
+            //park in safe zone
+            turnLeftPID(20);
+            setZero();
+            turnRightPID(20);
+        } else if (direction.equals("backward")) {
+            turnRightPID(20);
+            setZero();
+            turnLeftPID(20);
+        }
+        raiseJewel();
+    }
  */

@@ -10,17 +10,22 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 @Autonomous(name = "Servo-urban")
 public class ServoTest extends LinearOpMode {
-    Servo relicArm;
-    Servo relicGrabber;
+    Servo gate;
     @Override
     public void runOpMode() throws InterruptedException {
-        relicArm = hardwareMap.servo.get("relicArm");
-        relicGrabber = hardwareMap.servo.get("relicGrabber");
+        waitForStart();
+        gate = hardwareMap.servo.get("gate");
         /*relicArm.setPosition(0);
         sleep(3000);
         relicArm.setPosition(0.5);
         sleep(3000);
         */
+        for (double i = 0; i <= 1; i += 0.1){
+            telemetry.addData("Pos", i);
+            telemetry.update();
+            gate.setPosition(i);
+            sleep(500);
+        }
 
 
         /*
