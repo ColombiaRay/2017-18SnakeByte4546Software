@@ -100,9 +100,9 @@ public class HeadControlsTeleOp extends OpMode {
         inTake              = hardwareMap.dcMotor.get("intake");
 
         frontRightTunnel    = hardwareMap.crservo.get("FRT");
-        //backRightTunnel     = hardwareMap.servo.get("BRT");
+        backRightTunnel     = hardwareMap.crservo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
-        //backLeftTunnel      = hardwareMap.servo.get("BlT");
+        backLeftTunnel      = hardwareMap.crservo.get("BLT");
         //gateServo           = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
