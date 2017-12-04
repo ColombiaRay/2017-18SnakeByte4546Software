@@ -14,11 +14,12 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
         setInitialAngle();
         setAlliance('r');
         waitForStart();
-        scanImage();
+        // scanImage();
         lowerJewel();
         knockJewel();
-        moveForwardPID(345,0.001, 0.0000007, 0.5);
+        moveForwardPID(305,0.001, 0.0000007, 0.5);
         stopMovement();
+        sleep(500);
         strafeToCorrectColumnRed();
 
         /*

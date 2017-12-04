@@ -13,10 +13,13 @@ public class AutoCryptoBoxTestBlue extends AutoOpMode {
         setInitialAngle();
         setAlliance('b');
         waitForStart();
-        scanImage();
-        //hitJewel();
-        moveBackwardPID(280,0.001, 0.0000007, 0.5);
-        stopMovement();
-        strafeToCorrectColumnBlue();
+        //scanImage();
+        lowerJewel();
+        knockJewel();
+        moveBackwardPID(305,0.001, 0.0000007, 0.5);
+        setZero();
+        sleep(500);
+        pidTurn(90);
+        pidTurn(90);
     }
 }

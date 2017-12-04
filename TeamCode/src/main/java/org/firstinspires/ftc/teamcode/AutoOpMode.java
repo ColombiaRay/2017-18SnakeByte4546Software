@@ -89,7 +89,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     private DistanceSensor jewelDistance;
     private double initialAutoAngle;
     private boolean gateOpen;
-    private Servo gateServo;
+    //private Servo gateServo;
 
 
     public void initialize() throws InterruptedException {
@@ -131,7 +131,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         jewelKnocker = hardwareMap.servo.get("jewelknocker");
 
-        gate = hardwareMap.servo.get("gate");
+        //gate = hardwareMap.servo.get("gate");
 
         //gyro init
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -252,10 +252,15 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void raiseJewel() throws InterruptedException {
+        telemetry.addData("Raising", "jewel");
         while (jewelHitter.getPosition() < 1) {
             jewelHitter.setPosition(jewelHitter.getPosition() + 0.04);
             sleep(50);
         }
+    }
+
+    public void raiseJewelQuick(){
+        jewelHitter.setPosition(1);
     }
 
     public void setAlliance(char c) throws InterruptedException {
@@ -453,6 +458,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void strafeToCorrectColumnRed() throws InterruptedException {
+        cryptoboxKey = "right";
         if (cryptoboxKey.equals("left")) {
             moveStrafe(-0.6, 140);
             setZero();
@@ -461,22 +467,25 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(-0.6, 270);
             setZero();
         } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(-0.6, 140);
+            moveStrafe(-0.6, 200);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(-0.6, 305);
             setZero();
         } else {
-            moveStrafe(-0.6, 170);
+            moveStrafe(-0.6, 200);
             setZero();
         }
-        expelGlyphs(2000);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
         //moveForwardPID(100, 0.002, 0.0000007, 0.5);
-        moveBackwardPID(150, 0.003, 0.0000012, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
     }
 
     public void strafeToCorrectColumnBlue() throws InterruptedException {
+        cryptoboxKey = "left";
         if (cryptoboxKey.equals("right")) {
-            //Make the first movement slightly more and the second movement decently more
             moveStrafe(-0.6, 140);
             setZero();
             moveStrafe(-0.6, 270);
@@ -484,15 +493,20 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(-0.6, 270);
             setZero();
         } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(-0.6, 140);
+            moveStrafe(-0.6, 200);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(-0.6, 305);
             setZero();
         } else {
-            moveStrafe(-0.6, 140);
+            moveStrafe(-0.6, 200);
             setZero();
         }
-        moveBackwardPID(150, 0.001, 0.0000007, 0.5);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
     }
 
     /*
@@ -614,7 +628,8 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void findAngError(double goalAngle) throws InterruptedException {
         previousAngError = angError;
-        angError = Math.abs(goalAngle - angDisplacement);
+        angError = (goalAngle - angDisplacement);
+        telemetry.addData("Error", angError);
     }
 
     //Finds error, but has angle can be negative
@@ -949,7 +964,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         resetAngIntegral();
         setInitialAngError(angle);
         //setKValues(0.002777, 0.000002, 0.1);
-        setKValues(0.002777, 0.000002, 0.11);
+        setKValues(0.009, 0.00000002, 0);
         while ((angDisplacement < angle) && (opModeIsActive())) {
             findAngDisplacement();
             telemetry.addData("Yaw", getGyroYaw());
@@ -958,7 +973,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             findDeltaAngError();
             tallyAngIntegral();
             telemetry.update();
-            turn(getAngProportion() + getAngIntegral() + getAngDerivative());
+            turn(getAngProportion());
             idle();
         }
         setZero();
@@ -972,6 +987,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setInitialAngError(angle);
         //setKValues(0.002777, 0.000002, 0.1);
         setKValues(p, i, d);
+        double power;
         while ((angDisplacement < angle) && (opModeIsActive())) {
             findAngDisplacement();
             telemetry.addData("Yaw", getGyroYaw());
@@ -979,8 +995,10 @@ public abstract class AutoOpMode extends LinearOpMode {
             findDeltaT();
             findDeltaAngError();
             tallyAngIntegral();
+            power = getAngProportion() + getAngIntegral() + getAngDerivative();
+            telemetry.addData("Power", power);
             telemetry.update();
-            turn(getAngProportion() + getAngIntegral() + getAngDerivative());
+            turn(power);
             idle();
         }
         setZero();
@@ -1294,7 +1312,6 @@ public abstract class AutoOpMode extends LinearOpMode {
     */
 
     public void loadTunnel(int time){
-        closeGate();
         sleep(500);
         double startTime = System.currentTimeMillis();
         while(System.currentTimeMillis() - startTime < time) {
@@ -1306,7 +1323,6 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void expelGlyphs(int time){
-        raiseGate();
         double startTime = System.currentTimeMillis();
         while(System.currentTimeMillis() - startTime < time) {
             frontLeftTunnel.setPower(0.5);
@@ -1318,7 +1334,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         backLeftTunnel.setPower(0);
         frontRightTunnel.setPower(0);
         backRightTunnel.setPower(0);
-        raiseGate();
     }
 
     public void knockJewel() throws InterruptedException {
@@ -1413,6 +1428,19 @@ public abstract class AutoOpMode extends LinearOpMode {
         return "unknown";
     }
 
+    public void pidTurn(double angle) throws InterruptedException {
+        double kP = 0.25/angle;
+        setStartAngle();
+        setInitialAngError(angle);
+        while ((opModeIsActive()) && (angError > 0.3)){
+            findAngDisplacement();
+            findAngError(90);
+            telemetry.update();
+            turn(kP * angError + 0.25);
+        }
+        setZero();
+    }
+
     public String avgColorCompare() throws InterruptedException {
         double red = 0;
         double blue = 0;
@@ -1456,14 +1484,17 @@ public abstract class AutoOpMode extends LinearOpMode {
 
 //Range Sensor (on jewel hitter)
 
-    public void getJewelRange() {
-        telemetry.addData("Range", jewelDistance.getDistance(DistanceUnit.CM));
+    public double getJewelRange() {
+        double range = jewelDistance.getDistance(DistanceUnit.CM);
+        telemetry.addData("Range", range);
         telemetry.update();
+        return range;
     }
 
 
 //Gate on tunnel
 
+    /*
     public void closeGate() {
         gate.setPosition(0.35);
     }
@@ -1471,6 +1502,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void raiseGate(){
         gate.setPosition(0.7);
     }
+    */
 
 }
 

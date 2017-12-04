@@ -19,6 +19,8 @@ public class MattTunnel {
     private CRServo frontLeftTunnel;
     private CRServo backLeftTunnel;
 
+    private boolean gateClosed = false;
+
 
 
     public MattTunnel(DcMotor ll, DcMotor rl,  DcMotor iT, CRServo fRT, CRServo bRT, CRServo fLT, CRServo blT) {
@@ -108,5 +110,6 @@ public class MattTunnel {
             liftRight.setPower(-joy);
         }
     }
+
 
 }

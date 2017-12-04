@@ -13,7 +13,7 @@ public class JewelHitterTest extends AutoOpMode {
         initialize();
         waitForStart();
         sleep(2000);
-        jewelKnocker.setPosition(0.25);
+        jewelKnocker.setPosition(0.3);
         telemetry.addData("pos", 0.3);
         telemetry.update();
         sleep(2000);
@@ -21,7 +21,7 @@ public class JewelHitterTest extends AutoOpMode {
         telemetry.addData("pos", 0.5);
         telemetry.update();
         sleep(2000);
-        jewelKnocker.setPosition(0.85);
+        jewelKnocker.setPosition(0.8);
         telemetry.addData("pos", 0.7);
         telemetry.update();
         sleep(2000);

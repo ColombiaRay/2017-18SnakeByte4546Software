@@ -33,6 +33,7 @@ public class HeadControlsTeleOp extends OpMode {
     private DcMotor BR;
     private boolean braked;
 
+    private Servo gate;
     private DcMotor leftLiftSlide;
     private DcMotor rightLiftSlide;
     private DcMotor liftMani;
@@ -62,8 +63,11 @@ public class HeadControlsTeleOp extends OpMode {
     private final int DELAYTOGGLE = 500;
     private boolean relicOut;
     private boolean clampClosed;
-    private boolean gateOpen;
+    private boolean gateClosed;
     private Servo gateServo;
+    private double recentPressTime;
+    private boolean relicClosed;
+
 
     // added 11/30- for lift motor extend/retract
     private DcMotor relicLift;
@@ -103,7 +107,8 @@ public class HeadControlsTeleOp extends OpMode {
         backRightTunnel     = hardwareMap.crservo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
-        //gateServo           = hardwareMap.servo.get("gate");
+        recentPressTime = System.currentTimeMillis();
+        //gate = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
         relicArm            = hardwareMap.servo.get("relicArm");
@@ -112,11 +117,13 @@ public class HeadControlsTeleOp extends OpMode {
         liftOut             = false;
         relicOut            = false;
         clampClosed         = false;
-        gateOpen            = false;
+        gateClosed            = false;
+        relicClosed       = false;
         rightMotion         = 0;
         leftMotion          = 0;
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        relicGrabber        = hardwareMap.servo.get("relicGrabber");
+        relicGrabber        = hardwareMap.servo.get("relic");
+        currentTime = 0;
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
         relicLift           = hardwareMap.dcMotor.get("relicLift");
@@ -137,6 +144,7 @@ public class HeadControlsTeleOp extends OpMode {
     @Override
     public void loop() {
         grabRelic();
+
         lowerRelicArm();
         setPower();
         toggleHalfSpeed();
@@ -144,11 +152,7 @@ public class HeadControlsTeleOp extends OpMode {
         tunnel.toggleInTake(gamepad2.left_stick_y);
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
-        telemetry.addData("Jewel Arm Position", relicGrabber.getPosition());
-        telemetry.addData("JewelHitter", jewelHitter.getPosition());
-        telemetry.update();
         manipLift();
-
     }
 
 
@@ -177,8 +181,7 @@ public class HeadControlsTeleOp extends OpMode {
         if (gamepad1.dpad_left){
             jewelHitter.setPosition(0);
         }
-        if (gamepad1.dpad_right
-                ){
+        if (gamepad1.dpad_right){
             jewelHitter.setPosition(0.57);
         }
     }
@@ -217,16 +220,21 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
     public void grabRelic(){
-        if (gamepad2.right_trigger > 0.1) {
-            relicGrabber.setPosition(1);
-        }
-        else if (gamepad2.left_trigger > 0.1) {
-            relicGrabber.setPosition(0.3);
-        }
-        else {
-            relicGrabber.setPosition(0.5);
+        if (System.currentTimeMillis() - recentPressTime > 300) {
+            if (gamepad2.x) {
+                if (relicClosed){
+                    relicGrabber.setPosition(1);
+                    relicClosed = false;
+                }
+                else if (!relicClosed){
+                    relicGrabber.setPosition(0);
+                    relicClosed = true;
+                }
+            }
+            recentPressTime = System.currentTimeMillis();
         }
     }
+
 
     public void lowerRelicArm(){
         if (gamepad2.right_bumper) {
@@ -242,14 +250,29 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void manipLift() {
         if (gamepad2.dpad_up) {
-            relicLift.setPower(-1);
-        } else if (gamepad2.dpad_down)
             relicLift.setPower(1);
+        } else if (gamepad2.dpad_down) {
+            relicLift.setPower(-1);
+        }
         else {
             relicLift.setPower(0);
         }
     }
 
+    /*
+    public void useGate() {
+        if ((gamepad2.b) && ( System.currentTimeMillis() - currentTime < 500)) {
+            if (!gateClosed) {
+                gate.setPosition(0.35);
+                gateClosed = true;
+            } else if (gateClosed) {
+                gate.setPosition(0.7);
+                gateClosed = false;
+            }
+            currentTime = System.currentTimeMillis();
+        }
+    }
+    */
 
 
     //Jewel Hitter (have not tested positions)
