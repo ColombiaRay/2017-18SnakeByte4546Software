@@ -36,7 +36,5 @@ public class PIDTest extends AutoOpMode{
         //moveForwardPID(2000);
         setAlliance('b');
         waitForStart();
-        pidTurn(90);
-        pidTurn(90);
     }
 }

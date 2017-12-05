@@ -121,6 +121,8 @@ public class HeadControlsTeleOp extends OpMode {
         relicClosed       = false;
         rightMotion         = 0;
         leftMotion          = 0;
+        liftLeft = hardwareMap.dcMotor.get("LLift");
+        liftRight = hardwareMap.dcMotor.get("RLift");
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         relicGrabber        = hardwareMap.servo.get("relic");
         currentTime = 0;
@@ -148,9 +150,9 @@ public class HeadControlsTeleOp extends OpMode {
         lowerRelicArm();
         setPower();
         toggleHalfSpeed();
-        //useJewel();
-        tunnel.toggleInTake(gamepad2.left_stick_y);
-        //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
+        useJewel();
+        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
+        tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
         manipLift();
     }
@@ -179,10 +181,10 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void useJewel(){
         if (gamepad1.dpad_left){
-            jewelHitter.setPosition(0);
+            jewelHitter.setPosition(0.55);
         }
-        if (gamepad1.dpad_right){
-            jewelHitter.setPosition(0.57);
+        else if (gamepad1.dpad_right){
+            jewelHitter.setPosition(1);
         }
     }
 

@@ -458,21 +458,20 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void strafeToCorrectColumnRed() throws InterruptedException {
-        cryptoboxKey = "right";
         if (cryptoboxKey.equals("left")) {
-            moveStrafe(-0.6, 140);
+            moveStrafe(-0.6, 220);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(-0.6, 305);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(-0.6, 305);
             setZero();
         } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(-0.6, 200);
+            moveStrafe(-0.6, 220);
             setZero();
             moveStrafe(-0.6, 305);
             setZero();
         } else {
-            moveStrafe(-0.6, 200);
+            moveStrafe(-0.6, 220);
             setZero();
         }
         expelGlyphs(4500);
@@ -484,21 +483,20 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void strafeToCorrectColumnBlue() throws InterruptedException {
-        cryptoboxKey = "left";
         if (cryptoboxKey.equals("right")) {
-            moveStrafe(-0.6, 140);
+            moveStrafe(0.6, 200);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(0.6, 305);
             setZero();
-            moveStrafe(-0.6, 270);
+            moveStrafe(0.6, 305);
             setZero();
         } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(-0.6, 200);
+            moveStrafe(0.6, 200);
             setZero();
-            moveStrafe(-0.6, 305);
+            moveStrafe(0.6, 305);
             setZero();
         } else {
-            moveStrafe(-0.6, 200);
+            moveStrafe(0.6, 200);
             setZero();
         }
         expelGlyphs(4500);
@@ -509,6 +507,42 @@ public abstract class AutoOpMode extends LinearOpMode {
         //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
     }
 
+    public void moveToCorrectColumnRed() throws InterruptedException {
+        cryptoboxKey = "right";
+        if (cryptoboxKey.equals("right")) {
+            moveBackwardPID(305,0.001, 0.0000007, 0.5);
+        } else if (cryptoboxKey.equals("center")) {
+            moveBackwardPID(325,0.001, 0.0000007, 0.5);
+        } else {
+            moveBackwardPID(345,0.001, 0.0000007, 0.5);
+        }
+        setZero();
+        pidTurnLeft(90);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+    }
+
+    public void moveToCorrectColumnBlue() throws InterruptedException {
+        if (cryptoboxKey.equals("right")) {
+            moveForwardPID(305,0.001, 0.0000007, 0.5);
+        } else if (cryptoboxKey.equals("center")) {
+            moveForwardPID(325,0.001, 0.0000007, 0.5);
+        } else {
+            moveForwardPID(345,0.001, 0.0000007, 0.5);
+        }
+        setZero();
+        pidTurnRight(90);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+    }
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
         scanImage();
@@ -1428,7 +1462,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         return "unknown";
     }
 
-    public void pidTurn(double angle) throws InterruptedException {
+    public void pidTurnRight(double angle) throws InterruptedException {
         double kP = 0.25/angle;
         setStartAngle();
         setInitialAngError(angle);
@@ -1437,6 +1471,19 @@ public abstract class AutoOpMode extends LinearOpMode {
             findAngError(90);
             telemetry.update();
             turn(kP * angError + 0.25);
+        }
+        setZero();
+    }
+
+    public void pidTurnLeft(double angle) throws InterruptedException {
+        double kP = 0.25/angle;
+        setStartAngle();
+        setInitialAngError(angle);
+        while ((opModeIsActive()) && (angError > 0.3)){
+            findAngDisplacement();
+            findAngError(90);
+            telemetry.update();
+            turn(-kP * angError + 0.25);
         }
         setZero();
     }

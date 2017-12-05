@@ -45,7 +45,7 @@ public class MattTunnel {
 
     }
 
-    public void toggleInTake(double stickPower) {
+    public void toggleInTake(double stickPower, double rTrigger, double lTrigger) {
         /**
          * Pseudocode:
          *
@@ -60,6 +60,18 @@ public class MattTunnel {
             inTake.setPower(stickPower);
             releaseBlocks();
         }
+        else if (rTrigger > 0.1){
+            frontLeftTunnel.setPower(-0.05);
+            backLeftTunnel.setPower(-0.05);
+            frontRightTunnel.setPower(0.05);
+            backRightTunnel.setPower(-0.05);
+        }
+        else if (lTrigger > 0.05){
+            frontLeftTunnel.setPower(0.5);
+            backLeftTunnel.setPower(0.5);
+            frontRightTunnel.setPower(-0.5);
+            backRightTunnel.setPower(0.5);
+        }
         else {
             inTake.setPower(0.0);
             frontLeftTunnel.setPower(0);
@@ -71,12 +83,10 @@ public class MattTunnel {
 
 
     public void setBlocks() {
-
             frontLeftTunnel.setPower(0.5);
             backLeftTunnel.setPower(0.5);
             frontRightTunnel.setPower(-0.5);
             backRightTunnel.setPower(0.5);
-
     }
 
     public void releaseBlocks() {
@@ -90,25 +100,26 @@ public class MattTunnel {
     public void manipulateLift(double joyStick) {
         if (joyStick < -0.05) {
             lowerLift(joyStick);
-        } else if (joyStick > 0.05) {
+        }
+        else if (joyStick > 0.05) {
             raiseLift(joyStick);
+        }
+        else{
+            liftLeft.setPower(0);
+            liftRight.setPower(0);
         }
     }
 
     public void raiseLift(double joy) {
-        if (joy < 0.05) {
             liftLeft.setPower(-joy); // Edit later
             liftRight.setPower(joy);
-        }
     }
 
 
 
     public void lowerLift(double joy) {
-        if (joy > 0.05) {
-            liftLeft.setPower(joy); // Edit later
-            liftRight.setPower(-joy);
-        }
+            liftLeft.setPower(-joy); // Edit later
+            liftRight.setPower(joy);
     }
 
 

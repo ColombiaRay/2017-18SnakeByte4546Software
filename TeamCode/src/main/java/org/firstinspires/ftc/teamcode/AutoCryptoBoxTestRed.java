@@ -14,7 +14,7 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
         setInitialAngle();
         setAlliance('r');
         waitForStart();
-        // scanImage();
+        scanImage();
         lowerJewel();
         knockJewel();
         moveForwardPID(305,0.001, 0.0000007, 0.5);
