@@ -222,7 +222,7 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
     public void grabRelic(){
-        if (System.currentTimeMillis() - recentPressTime > 300) {
+        if (System.currentTimeMillis() - recentPressTime > 150) {
             if (gamepad2.x) {
                 if (relicClosed){
                     relicGrabber.setPosition(1);

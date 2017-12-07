@@ -62,6 +62,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     CRServo frontLeftTunnel;
     CRServo backLeftTunnel;
     private double currentTime;
+    private DcMotor liftLeft;
+    private DcMotor liftRight;
     private double pastTime;
     private double integral;
     private double angleIntegral;
@@ -121,6 +123,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         rightLiftSlide = hardwareMap.dcMotor.get("RSlide");
         liftMani = hardwareMap.dcMotor.get("liftMani");
         */
+        //liftLeft = hardwareMap.dcMotor.get("LLift");
+        //liftRight = hardwareMap.dcMotor.get("RLift");
         frontRightTunnel    = hardwareMap.crservo.get("FRT");
         backRightTunnel     = hardwareMap.crservo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
@@ -395,6 +399,24 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
     */
+
+    public void raiseLift(double time){
+        double startTime = System.currentTimeMillis();
+        liftLeft.setPower(-1);
+        liftRight.setPower(1);
+        sleep(500);
+        liftLeft.setPower(0);
+        liftRight.setPower(0);
+    }
+
+    public void lowerLift(double time){
+        double startTime = System.currentTimeMillis();
+        liftLeft.setPower(1);
+        liftRight.setPower(-1);
+        sleep(500);
+        liftLeft.setPower(0);
+        liftRight.setPower(0);
+    }
 
     public void scanImage() throws InterruptedException {
         //Camera Set Up
@@ -1358,7 +1380,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void expelGlyphs(int time){
         double startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() - startTime < time) {
+        while((System.currentTimeMillis() - startTime < time) && (opModeIsActive())){
             frontLeftTunnel.setPower(0.5);
             backLeftTunnel.setPower(0.5);
             frontRightTunnel.setPower(-0.5);
@@ -1473,6 +1495,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             turn(kP * angError + 0.25);
         }
         setZero();
+        sleep(200);
     }
 
     public void pidTurnLeft(double angle) throws InterruptedException {

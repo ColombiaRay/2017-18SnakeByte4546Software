@@ -61,10 +61,10 @@ public class MattTunnel {
             releaseBlocks();
         }
         else if (rTrigger > 0.1){
-            frontLeftTunnel.setPower(-0.05);
-            backLeftTunnel.setPower(-0.05);
-            frontRightTunnel.setPower(0.05);
-            backRightTunnel.setPower(-0.05);
+            frontLeftTunnel.setPower(-0.5);
+            backLeftTunnel.setPower(-0.5);
+            frontRightTunnel.setPower(0.5);
+            backRightTunnel.setPower(-0.5);
         }
         else if (lTrigger > 0.05){
             frontLeftTunnel.setPower(0.5);

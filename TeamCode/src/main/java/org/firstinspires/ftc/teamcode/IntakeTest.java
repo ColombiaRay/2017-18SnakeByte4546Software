@@ -11,7 +11,8 @@ public class IntakeTest extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         initialize();
-        loadTunnel(2000);
-        expelGlyphs(2000);
+        lowerLift(500);
+        sleep(1000);
+        raiseLift(500);
     }
 }

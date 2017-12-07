@@ -10,14 +10,17 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class AutoCryptoBoxTestRed extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        setAlliance('r');
         initialize();
         setInitialAngle();
-        setAlliance('r');
         waitForStart();
         scanImage();
         lowerJewel();
         knockJewel();
-        moveForwardPID(305,0.001, 0.0000007, 0.5);
+        //raiseLift(1500);
+        sleep(500);
+        moveForwardPID(325,0.001, 0.0000007, 0.5);
+        //lowerLift(1500);
         stopMovement();
         sleep(500);
         strafeToCorrectColumnRed();
