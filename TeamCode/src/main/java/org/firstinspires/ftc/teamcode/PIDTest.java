@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * Created by raymo on 11/13/2017.
  */
-@Autonomous
+//@Autonomous
 public class PIDTest extends AutoOpMode{
     @Override
     public void runOpMode() throws InterruptedException {

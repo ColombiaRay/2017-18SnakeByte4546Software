@@ -10,12 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class JustJewelRed extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        initialize();
         setAlliance('r');
+        initialize();
         waitForStart();
         lowerJewel();
         knockJewel();
-        moveForwardPID(305,0.001, 0.0000007, 0.5);
+        moveForwardPID(335,0.001, 0.0000007, 0.5);
         stopMovement();
     }
 }

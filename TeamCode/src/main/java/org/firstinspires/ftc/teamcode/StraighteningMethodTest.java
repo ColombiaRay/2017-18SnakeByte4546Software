@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 11/21/2017.
  */
 
-@Autonomous
+//@Autonomous
 public class StraighteningMethodTest extends AutoOpMode
 {
     @Override

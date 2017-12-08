@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Created by sopa on 9/12/17.
  */
 
-@TeleOp (name = "ProteinIsMyTeleOp", group = "TeleOp")
+//@TeleOp (name = "ProteinIsMyTeleOp", group = "TeleOp")
 public class MecanumTeleOpTest extends OpMode {
     double velocity = 0;
     double rotation = 0;

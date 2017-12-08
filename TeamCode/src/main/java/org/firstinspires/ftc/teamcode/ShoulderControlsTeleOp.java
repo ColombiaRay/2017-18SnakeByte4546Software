@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by raymo on 10/4/17.
  */
 
-@TeleOp (name = "ShouldersAreMyTeleOp", group = "TeleOp")
+//@TeleOp (name = "ShouldersAreMyTeleOp", group = "TeleOp")
 public class ShoulderControlsTeleOp extends OpMode {
     double rightMotion = 0;
     double leftMotion = 0;

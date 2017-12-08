@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 /**
  * Created by sopa on 10/25/17.
  */
-@Autonomous (name = "Blue is the warmest color")
+//@Autonomous (name = "Blue is the warmest color")
 public class JewelHittingAutoBlue extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

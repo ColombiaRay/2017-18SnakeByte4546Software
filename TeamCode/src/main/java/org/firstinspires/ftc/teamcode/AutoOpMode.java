@@ -248,18 +248,21 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void lowerJewel() throws InterruptedException {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
-        while (jewelHitter.getPosition() > 0.65) {
+        while ((jewelHitter.getPosition() > 0.65) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() - 0.04);
             sleep(50);
+            idle();
         }
 
     }
 
     public void raiseJewel() throws InterruptedException {
         telemetry.addData("Raising", "jewel");
-        while (jewelHitter.getPosition() < 1) {
+        while ((jewelHitter.getPosition() < 1) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() + 0.04);
             sleep(50);
+            idle();
+
         }
     }
 

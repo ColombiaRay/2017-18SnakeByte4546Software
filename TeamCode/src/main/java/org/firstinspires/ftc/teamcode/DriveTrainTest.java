@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  */
 
 
-@Autonomous(name = "Test", group = "Autonomous")
+//@Autonomous(name = "Test", group = "Autonomous")
 public class DriveTrainTest extends AutoOpMode
 {
     @Override

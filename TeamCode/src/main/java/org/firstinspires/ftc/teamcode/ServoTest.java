@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by raymo on 10/16/2017.
  */
-@Autonomous(name = "Servo-urban")
+//@Autonomous(name = "Servo-urban")
 public class ServoTest extends LinearOpMode {
     Servo relic;
     @Override

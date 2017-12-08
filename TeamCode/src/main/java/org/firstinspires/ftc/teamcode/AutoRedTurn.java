@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 12/4/2017.
  */
 
-@Autonomous
+//@Autonomous
 public class AutoRedTurn extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

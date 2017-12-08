@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 11/27/2017.
  */
 
-@Autonomous
+//@Autonomous
 public class InitialAutoActionsTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
