@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Path;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -8,34 +10,30 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by raymo on 10/16/2017.
  */
-//@Autonomous(name = "Servo-urban")
+@Autonomous(name = "Servo-urban")
 public class ServoTest extends LinearOpMode {
     Servo relic;
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
-        relic = hardwareMap.servo.get("relic");
-        /*relicArm.setPosition(0);
+        Servo relicArm;
+        relicArm            = hardwareMap.servo.get("relicArm");
+        relicArm.setDirection(Servo.Direction.FORWARD);
+        relicArm.setPosition(0);
         sleep(3000);
         relicArm.setPosition(0.5);
         sleep(3000);
-        */
+
+        /*
         for (double i = 0; i <= 1; i += 0.1){
             telemetry.addData("Pos", i);
             telemetry.update();
-            relic.setPosition(i);
+            relicArm.setPosition(i);
+            //Relic Arm down 0.15, over the wall .65
             sleep(500);
         }
-
-
-        /*
-        //lower arm
-        relicGrabber.setPosition(0.3);
-        sleep(3000);
-        //raise arm
-        relicGrabber.setPosition(0.7);
-        sleep(3000);
         */
+
 
         /*
         //Open Relic (continuous mode)
