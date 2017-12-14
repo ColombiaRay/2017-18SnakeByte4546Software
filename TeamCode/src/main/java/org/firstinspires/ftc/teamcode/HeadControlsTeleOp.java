@@ -80,6 +80,15 @@ public class HeadControlsTeleOp extends OpMode {
     // added 11/30- for lift motor extend/retract
     private DcMotor relicLift;
 
+    // added 12/12- for clamp lift
+
+    private DcMotor leftCLift;
+    private DcMotor rightCLift;
+
+
+    private CRServo leftClamp;
+    private CRServo rightClamp;
+
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
 
@@ -140,6 +149,9 @@ public class HeadControlsTeleOp extends OpMode {
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
         relicLift           = hardwareMap.dcMotor.get("relicLift");
+
+        leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
+        rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
 
         //rightMani.setDirection(Servo.Direction.FORWARD);
         //leftMani.setDirection(Servo.Direction.REVERSE);

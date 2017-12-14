@@ -245,6 +245,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         return color.blue();
     }
 
+
     public void lowerJewel() throws InterruptedException {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
