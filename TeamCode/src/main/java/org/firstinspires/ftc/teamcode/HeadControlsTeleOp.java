@@ -110,7 +110,7 @@ public class HeadControlsTeleOp extends OpMode {
         jewelHitter         = hardwareMap.servo.get("jewelhitter");
         //liftLeft            = hardwareMap.dcMotor.get("leftLift");
         //liftRight           = hardwareMap.dcMotor.get("rightLift");
-        inTake              = hardwareMap.dcMotor.get("intake");
+        //inTake              = hardwareMap.dcMotor.get("intake");
 
         frontRightTunnel    = hardwareMap.crservo.get("FRT");
         backRightTunnel     = hardwareMap.crservo.get("BRT");
@@ -120,7 +120,7 @@ public class HeadControlsTeleOp extends OpMode {
         //gate = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        relicArm            = hardwareMap.servo.get("relicArm");
+        //relicArm            = hardwareMap.servo.get("relicArm");
         halfSpeed           = false;
         braked              = false;
         liftOut             = false;
@@ -130,17 +130,17 @@ public class HeadControlsTeleOp extends OpMode {
         relicClosed       = false;
         rightMotion         = 0;
         leftMotion          = 0;
-        liftLeft = hardwareMap.dcMotor.get("LLift");
-        liftRight = hardwareMap.dcMotor.get("RLift");
+        //liftLeft = hardwareMap.dcMotor.get("LLift");
+        //liftRight = hardwareMap.dcMotor.get("RLift");
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        relicGrabber        = hardwareMap.servo.get("relic");
+        //relicGrabber        = hardwareMap.servo.get("relic");
         currentTime = 0;
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
-        relicLift           = hardwareMap.dcMotor.get("relicLift");
+        //relicLift           = hardwareMap.dcMotor.get("relicLift");
 
-        leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
-        rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
+        //leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
+        //rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
 
         //rightMani.setDirection(Servo.Direction.FORWARD);
         //leftMani.setDirection(Servo.Direction.REVERSE);
@@ -157,16 +157,16 @@ public class HeadControlsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        grabRelic();
+        //grabRelic();
 
-        lowerRelicArm();
+        //lowerRelicArm();
         setPower();
         toggleHalfSpeed();
         useJewel();
-        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
-        tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
+        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_stick_y);
+        //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
-        manipLift();
+        //manipLift();
     }
 
 

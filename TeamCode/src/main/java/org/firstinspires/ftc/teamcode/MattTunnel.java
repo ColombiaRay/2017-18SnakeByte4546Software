@@ -81,6 +81,44 @@ public class MattTunnel {
         }
     }
 
+    public void toggleInTake(double joyStick, double joyStick2) {
+        /**
+         * Pseudocode:
+         *
+         *  spin intake motors
+         */
+
+        if(Math.abs(joyStick) > .1 || Math.abs(joyStick2) > .1) {
+            if (joyStick2 > 0.1){
+                frontLeftTunnel.setPower(0.5);
+                backLeftTunnel.setPower(0.5);
+
+            }
+            else if (joyStick2 < -0.1){
+                frontLeftTunnel.setPower(-0.5);
+                backLeftTunnel.setPower(-0.5);
+
+            }
+            if (joyStick > 0.1){
+                frontRightTunnel.setPower(-0.5);
+                backRightTunnel.setPower(0.5);
+
+            }
+            else if (joyStick < -0.1){
+                frontRightTunnel.setPower(0.5);
+                backRightTunnel.setPower(-0.5);
+            }
+
+        }
+        else {
+            //inTake.setPower(0.0);
+            frontLeftTunnel.setPower(0);
+            backLeftTunnel.setPower(0);
+            frontRightTunnel.setPower(0);
+            backRightTunnel.setPower(0);
+        }
+
+    }
 
     public void setBlocks() {
             frontLeftTunnel.setPower(0.5);
@@ -103,6 +141,19 @@ public class MattTunnel {
         }
         else if (joyStick > 0.05) {
             raiseLift(joyStick);
+        }
+        else{
+            liftLeft.setPower(0);
+            liftRight.setPower(0);
+        }
+    }
+
+    public void manipulateLift(boolean aPressed, boolean yPressed) {
+        if (aPressed) {
+            lowerLift(-1);
+        }
+        else if (yPressed) {
+            raiseLift(1);
         }
         else{
             liftLeft.setPower(0);
