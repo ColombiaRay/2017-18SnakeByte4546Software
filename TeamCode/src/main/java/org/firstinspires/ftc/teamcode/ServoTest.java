@@ -18,13 +18,6 @@ public class ServoTest extends LinearOpMode {
         waitForStart();
         Servo relicArm;
         relicArm            = hardwareMap.servo.get("relicArm");
-        relicArm.setDirection(Servo.Direction.FORWARD);
-        relicArm.setPosition(0);
-        sleep(3000);
-        relicArm.setPosition(0.5);
-        sleep(3000);
-
-        /*
         for (double i = 0; i <= 1; i += 0.1){
             telemetry.addData("Pos", i);
             telemetry.update();
@@ -32,7 +25,6 @@ public class ServoTest extends LinearOpMode {
             //Relic Arm down 0.15, over the wall .65
             sleep(500);
         }
-        */
 
 
         /*

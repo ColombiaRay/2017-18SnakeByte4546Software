@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -483,6 +484,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public double getStrafeCorrection(double desiredAngle) throws InterruptedException {
+        //+ means correction is turning right, - is turning left
+        double difference = getGyroYaw() - desiredAngle;
+        telemetry.addData("Difference", difference);
+        telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
+        telemetry.update();
+        return Range.clip(-difference * 0.25/10, -0.125, 0.125);
+    }
+
     public void strafeToCorrectColumnRed() throws InterruptedException {
         if (cryptoboxKey.equals("left")) {
             moveStrafe(-0.6, 220);
@@ -630,8 +640,9 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveStrafe(double strafe, int distance) throws InterruptedException {
         double startStrafe = getStrafeEncoders();
+        setStartAngle();
         while ((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
-            moveStrafe(strafe);
+            setPower(0, getStrafeCorrection(startAngle),strafe);
             telemetry.addData("distance", getStrafeEncoders() - startStrafe);
             telemetry.update();
             idle();
@@ -698,6 +709,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         angError = goalAngle - angDisplacement;
     }
 
+
     public void setKValues(double pValue, double iValue, double dValue) {
         kP = pValue;
         kI = iValue;
@@ -716,7 +728,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         Log.e("Accuracy", displacement + "/" + goalDistance);
         telemetry.addData("Distance", displacement + "/" + goalDistance);
-
     }
 
     public void getPercentTurned(double goalAngle) {
@@ -1494,7 +1505,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setInitialAngError(angle);
         while ((opModeIsActive()) && (angError > 0.3)){
             findAngDisplacement();
-            findAngError(90);
+            findAngError(angle);
             telemetry.update();
             turn(kP * angError + 0.25);
         }
