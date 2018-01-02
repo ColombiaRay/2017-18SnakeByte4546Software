@@ -6,15 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 11/21/2017.
  */
 
-//@Autonomous
+@Autonomous
 public class StrafeTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
         setStartAngle();
         waitForStart();
-        while (opModeIsActive()) {
-            setPower(0,0, 0.4);
-        }
+        pidTurnRight(180);
     }
 }

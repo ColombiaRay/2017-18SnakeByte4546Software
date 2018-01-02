@@ -59,14 +59,24 @@ public class HeadControlsTeleOp extends OpMode {
     private MattTunnel tunnel;
     private Servo relicGrabber;
     private Servo relicClamp;
+    private Servo relic;
     private Servo relicArm;
-    private final int DELAYTOGGLE = 500;
+    private final int DELAYTOGGLE = 200;
     private boolean relicOut;
     private boolean clampClosed;
     private boolean gateClosed;
     private Servo gateServo;
     private double recentPressTime;
+    private double recentRelicArmTime;
     private boolean relicClosed;
+    private boolean relicLowering;
+    private boolean relicRaising;
+    private final double DELAY_TIME_MS = 150;
+    private final double RELIC_MOTION_TIME_MS = 50;
+    private double lastRelicTime;
+
+    private double relicMoveTime;
+    private double relicPos;
 
 
     // added 11/30- for lift motor extend/retract
@@ -83,6 +93,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
+
+    public HeadControlsTeleOp() {
+    }
 
     @Override
     public void init() {
@@ -130,17 +143,19 @@ public class HeadControlsTeleOp extends OpMode {
         relicClosed       = false;
         rightMotion         = 0;
         leftMotion          = 0;
-        //liftLeft = hardwareMap.dcMotor.get("LLift");
-        //liftRight = hardwareMap.dcMotor.get("RLift");
+        relicPos            = 0;
+        //:)liftLeft = hardwareMap.dcMotor.get("LLift");
+        //:)liftRight = hardwareMap.dcMotor.get("RLift");
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
-        //relicGrabber        = hardwareMap.servo.get("relic");
+        //:)relicGrabber        = hardwareMap.servo.get("relic");
         currentTime = 0;
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
-        //relicLift           = hardwareMap.dcMotor.get("relicLift");
+        //:)relicLift           = hardwareMap.dcMotor.get("relicLift");
 
-        //leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
-        //rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
+
+        leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
+        rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
 
         //rightMani.setDirection(Servo.Direction.FORWARD);
         //leftMani.setDirection(Servo.Direction.REVERSE);
@@ -158,12 +173,15 @@ public class HeadControlsTeleOp extends OpMode {
     @Override
     public void loop() {
         //grabRelic();
-
+        //alterRelicMotion();
+        //changeRelicPos();
         //lowerRelicArm();
         setPower();
         toggleHalfSpeed();
         useJewel();
-        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_stick_y);
+        useRelicArm();
+        raiseClamps();
+        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
         //manipLift();
@@ -200,6 +218,38 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+    public void alterRelicMotion(){
+        if ((gamepad2.b) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) && (!relicRaising)){
+            relic.setPosition(0.25);
+            relicRaising = true;
+            relicLowering = false;
+            relicMoveTime = System.currentTimeMillis();
+        }
+        else if ((gamepad2.a) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) && (!relicLowering)){
+            relic.setPosition(0.65);
+            relicLowering = true;
+            relicRaising = false;
+            relicMoveTime = System.currentTimeMillis();
+        }
+
+    }
+
+    public void changeRelicPos(){
+        if (System.currentTimeMillis() - lastRelicTime > RELIC_MOTION_TIME_MS){
+            if (relicRaising){
+                if (relic.getPosition() > 0.25){
+                    relic.setPosition(relic.getPosition() - 0.05);
+                    lastRelicTime = System.currentTimeMillis();
+                }
+            }
+            else if (relicLowering){
+                if (relic.getPosition() < 0.65){
+                    relic.setPosition(relic.getPosition() + 0.05);
+                    lastRelicTime = System.currentTimeMillis();
+                }
+            }
+        }
+    }
 
     public void toggleHalfSpeed() {
         currentTime = System.currentTimeMillis();
@@ -250,6 +300,7 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
 
+    /*
     public void lowerRelicArm(){
         if (gamepad2.right_bumper) {
             relicArm.setPosition(0.3);
@@ -261,6 +312,7 @@ public class HeadControlsTeleOp extends OpMode {
             relicArm.setPosition(0.5);
         }
     }
+    */
 
     public void manipLift() {
         if (gamepad2.dpad_up) {
@@ -291,7 +343,38 @@ public class HeadControlsTeleOp extends OpMode {
 
     //Jewel Hitter (have not tested positions)
 
+    public void useRelicArm(){
+        if (System.currentTimeMillis() - recentRelicArmTime > DELAY_TIME_MS) {
+            if (gamepad2.a) {
+                relicArm.setPosition(0.05);
+                relicPos = 1;
+                recentRelicArmTime = System.currentTimeMillis();
+            } else if (gamepad2.x) {
+                relicArm.setPosition(0.4);
+                relicPos = 2;
+                recentRelicArmTime = System.currentTimeMillis();
+            } else if (gamepad2.y) {
+                relicArm.setPosition(1);
+                relicPos = 3;
+                recentRelicArmTime = System.currentTimeMillis();
+            }
+        }
+    }
 
+    public void raiseClamps(){
+        if (gamepad2.right_bumper){
+            rightCLift.setPower(0.7);
+            leftCLift.setPower(-0.7);
+        }
+        else if (gamepad2.left_bumper){
+            rightCLift.setPower(-0.7);
+            leftCLift.setPower(0.7);
+        }
+        else{
+            rightCLift.setPower(0);
+            leftCLift.setPower(0);
+        }
+    }
 
     public void setPower() {
         FL.setPower(getHalfSpeed()*(getLeftVelocity() - getLeftShoulder() + getRightShoulder()));
@@ -299,6 +382,7 @@ public class HeadControlsTeleOp extends OpMode {
         BL.setPower(getHalfSpeed()*(getLeftVelocity() + getLeftShoulder() - getRightShoulder()));
         BR.setPower(getHalfSpeed()*(-getRightVelocity() - getLeftShoulder() + getRightShoulder()));
     }
+
 
 
     //Has some potential for balancing
