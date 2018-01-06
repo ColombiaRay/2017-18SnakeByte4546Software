@@ -14,7 +14,7 @@ public class ShoulderControlsTeleOp extends OpMode {
     double rightMotion = 0;
     double leftMotion = 0;
     boolean halfSpeed = false;
-    final int delayToggle = 500;
+    final int DELAY_TOGGLE_MS = 300;
     DcMotor FL;
     DcMotor FR;
     DcMotor BL;
@@ -30,6 +30,8 @@ public class ShoulderControlsTeleOp extends OpMode {
     Servo rightArm;
     Servo leftRelic;
     Servo rightRelic;
+    Servo leftGlyphClamp;
+    Servo rightGlyphClamp;
     double leftRelicPosition;
     double rightRelicPosition;
     long currentTime;
@@ -37,6 +39,8 @@ public class ShoulderControlsTeleOp extends OpMode {
     long closeTime;
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
+    boolean clampOpen = true;
+    long lastGlyphTime;
 
     @Override
     public void init() {
@@ -64,6 +68,8 @@ public class ShoulderControlsTeleOp extends OpMode {
         liftMani = hardwareMap.dcMotor.get("liftMani");
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
+        leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
+        rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
         telemetry.addData("Initialization", "done");
         telemetry.update();
     }
@@ -79,6 +85,7 @@ public class ShoulderControlsTeleOp extends OpMode {
         //grapRelic();
         pickRelic();
         useJewel();
+        useGlyphClamps();
         //jewelHitter.setPosition(0.54);
         //telemetry.addData("JewelHitter", jewelHitter.getPosition());
     }
@@ -118,7 +125,7 @@ public class ShoulderControlsTeleOp extends OpMode {
 
     public void toggleHalfSpeed() {
         currentTime = System.currentTimeMillis();
-        if (gamepad1.x && (currentTime - lastTime) < delayToggle) {
+        if (gamepad1.x && (currentTime - lastTime) < DELAY_TOGGLE_MS) {
             if (halfSpeed) {
                 halfSpeed = false;
                 telemetry.addData("halfspeed", "disabled");
@@ -243,6 +250,22 @@ public class ShoulderControlsTeleOp extends OpMode {
         }
         else{
             liftMani.setPower(0);
+        }
+    }
+
+    public void useGlyphClamps(){
+        if ((gamepad2.b) && (System.currentTimeMillis() - lastGlyphTime < DELAY_TOGGLE_MS)){
+            if (clampOpen) {
+                leftGlyphClamp.setPosition(0.1);
+                rightGlyphClamp.setPosition(0.8);
+                clampOpen = false;
+            }
+            else if (!clampOpen){
+                leftGlyphClamp.setPosition(0.4);
+                rightGlyphClamp.setPosition(0.5);
+                clampOpen = true;
+            }
+            lastGlyphTime = System.currentTimeMillis();
         }
     }
 }

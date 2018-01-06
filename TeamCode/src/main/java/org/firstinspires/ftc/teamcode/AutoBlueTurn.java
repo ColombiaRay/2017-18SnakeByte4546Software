@@ -15,6 +15,6 @@ public class AutoBlueTurn extends AutoOpMode {
         lowerJewel();
         knockJewel();
         sleep(500);
-        moveToCorrectColumnBlue();
+        //moveToCorrectColumnBlue();
     }
 }

@@ -13,6 +13,11 @@ public class StrafingTest extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
-        moveStrafe(0.5, 500);
+        while(opModeIsActive()){
+            telemetry.addData("Angle", getSpecialGyroYaw());
+            telemetry.update();
+        }
+        //moveStrafe(0.6,300);
+        //moveStrafe(-0.6,300);
     }
 }
