@@ -129,7 +129,7 @@ public class HeadControlsTeleOp extends OpMode {
         jewelHitter         = hardwareMap.servo.get("jewelhitter");
         //liftLeft            = hardwareMap.dcMotor.get("leftLift");
         //liftRight           = hardwareMap.dcMotor.get("rightLift");
-        //inTake              = hardwareMap.dcMotor.get("intake");
+        inTake              = hardwareMap.dcMotor.get("intake");
 
         frontRightTunnel    = hardwareMap.crservo.get("FRT");
         backRightTunnel     = hardwareMap.crservo.get("BRT");
@@ -142,7 +142,7 @@ public class HeadControlsTeleOp extends OpMode {
         //gate = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        //relicArm            = hardwareMap.servo.get("relicArm");
+        relicArm            = hardwareMap.servo.get("relicArm");
         halfSpeed           = false;
         braked              = false;
         liftOut             = false;
@@ -296,17 +296,17 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void grabRelic(){
         if (System.currentTimeMillis() - recentPressTime > 150) {
-            telemetry.addData("a", "a");
+            //telemetry.addData("a", "a");
             if (gamepad2.right_stick_button) {
                 if (!relicClosed){
                     telemetry.addData("a", "a");
                     relic.setPosition(1);
-                    relicClosed = false;
+                    relicClosed = true;
                 }
                 else if (relicClosed){
-                    telemetry.addData("a", "a");
+                    telemetry.addData("b", "b");
                     relic.setPosition(0);
-                    relicClosed = true;
+                    relicClosed = false;
                 }
                 telemetry.update();
             }
@@ -457,7 +457,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightArm.setPosition(0.5);
         }
     }
-
     public void setLiftSlide(){
         if (gamepad2.left_stick_y < -0.1){
             leftLiftSlide.setPower(-1);
@@ -472,7 +471,6 @@ public class HeadControlsTeleOp extends OpMode {
             leftLiftSlide.setPower(0);
         }
     }
-
     public void useRelicGrabber() {
         if (gamepad2.right_stick_y > 0.05){
             relicGrabber.setPosition(1);
@@ -490,9 +488,7 @@ public class HeadControlsTeleOp extends OpMode {
             relicClamp.setPosition(1);
             clampClosed = false;
         }
-
     }
-
     //clamp for glyphs
     public void setManiPower(){
         if (gamepad2.b){
@@ -509,7 +505,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightMani.setPosition(0.5);
         }
     }
-
     public void grapRelic() {
         if(gamepad2.x) {
             leftRelicPosition += .005;
@@ -524,7 +519,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightRelic.setPosition(rightRelicPosition);
         }
     }
-
     public void pickRelic(){
         if(gamepad2.x) {
             leftRelic.setPosition(1);
@@ -535,7 +529,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightRelic.setPosition(1);
         }
     }
-
     public void raiseMani() {
         if (gamepad2.dpad_down){
             liftMani.setPower(1);
