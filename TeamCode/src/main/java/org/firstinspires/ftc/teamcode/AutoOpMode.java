@@ -100,13 +100,16 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double previousAngle;
     private int revolutions;
     private String jColor;
+    Servo relic;
+    Servo relicArm;
+    MattTunnel tunnel;
     private boolean scored;
     //private Servo gateServo;
 
 
     public void initialize() throws InterruptedException {
         //RelicGrabber = hardwareMap.servo.get("RG");
-
+        relic = hardwareMap.servo.get("relic");
         //FL is 0, BL is 1, FR is 2, BR is 3
         //Jewel is 0
         FL = hardwareMap.dcMotor.get("FL");
@@ -140,7 +143,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
         inTake              = hardwareMap.dcMotor.get("intake");
-
+        relicArm            = hardwareMap.servo.get("relicArm");
+        tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
         rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
 
