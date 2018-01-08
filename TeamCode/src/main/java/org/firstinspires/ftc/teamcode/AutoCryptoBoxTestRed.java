@@ -23,7 +23,7 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
         //lowerLift(1500);
         stopMovement();
         sleep(500);
-        strafeToCorrectColumnRed();
+        //strafeToCorrectColumnRed();
 
         /*
 

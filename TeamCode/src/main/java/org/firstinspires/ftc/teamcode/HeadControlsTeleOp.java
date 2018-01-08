@@ -55,6 +55,8 @@ public class HeadControlsTeleOp extends OpMode {
     private Servo rightArm;
     private Servo leftRelic;
     private Servo rightRelic;
+    private Servo leftGlyphClamp;
+    private Servo rightGlyphClamp;
 
     private MattTunnel tunnel;
     private Servo relicGrabber;
@@ -67,13 +69,17 @@ public class HeadControlsTeleOp extends OpMode {
     private boolean gateClosed;
     private Servo gateServo;
     private double recentPressTime;
-    private double recentRelicArmTime;
+    private double recentRelicArmTime = 0;
     private boolean relicClosed;
     private boolean relicLowering;
     private boolean relicRaising;
-    private final double DELAY_TIME_MS = 150;
+    private final double DELAY_TIME_MS = 300;
     private final double RELIC_MOTION_TIME_MS = 50;
     private double lastRelicTime;
+    boolean clampOpen = true;
+    long lastGlyphTime;
+    private boolean firstRelicPos = true;
+
 
     private double relicMoveTime;
     private double relicPos;
@@ -129,7 +135,10 @@ public class HeadControlsTeleOp extends OpMode {
         backRightTunnel     = hardwareMap.crservo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
-        recentPressTime = System.currentTimeMillis();
+        leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
+        rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
+        relic = hardwareMap.servo.get("relic");
+        recentPressTime = 0;
         //gate = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
@@ -172,7 +181,7 @@ public class HeadControlsTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        //grabRelic();
+        grabRelic();
         //alterRelicMotion();
         //changeRelicPos();
         //lowerRelicArm();
@@ -180,13 +189,15 @@ public class HeadControlsTeleOp extends OpMode {
         toggleHalfSpeed();
         useJewel();
         useRelicArm();
-        raiseClamps();
+        //raiseClamps();
+        useGlyphClamps();
         tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
+        //alterRelicMotion();
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
         //manipLift();
-    }
 
+    }
 
     public double getRightVelocity()
     {
@@ -219,13 +230,13 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
     public void alterRelicMotion(){
-        if ((gamepad2.b) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) && (!relicRaising)){
+        if ((gamepad2.x) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) ){
             relic.setPosition(0.25);
             relicRaising = true;
             relicLowering = false;
             relicMoveTime = System.currentTimeMillis();
         }
-        else if ((gamepad2.a) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) && (!relicLowering)){
+        else if ((gamepad2.a) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS)){
             relic.setPosition(0.65);
             relicLowering = true;
             relicRaising = false;
@@ -285,15 +296,19 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void grabRelic(){
         if (System.currentTimeMillis() - recentPressTime > 150) {
-            if (gamepad2.x) {
-                if (relicClosed){
-                    relicGrabber.setPosition(1);
+            telemetry.addData("a", "a");
+            if (gamepad2.right_stick_button) {
+                if (!relicClosed){
+                    telemetry.addData("a", "a");
+                    relic.setPosition(1);
                     relicClosed = false;
                 }
-                else if (!relicClosed){
-                    relicGrabber.setPosition(0);
+                else if (relicClosed){
+                    telemetry.addData("a", "a");
+                    relic.setPosition(0);
                     relicClosed = true;
                 }
+                telemetry.update();
             }
             recentPressTime = System.currentTimeMillis();
         }
@@ -376,11 +391,13 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+
+
     public void setPower() {
-        FL.setPower(getHalfSpeed()*(getLeftVelocity() - getLeftShoulder() + getRightShoulder()));
-        FR.setPower(getHalfSpeed()*(-getRightVelocity() + getLeftShoulder() - getRightShoulder()));
-        BL.setPower(getHalfSpeed()*(getLeftVelocity() + getLeftShoulder() - getRightShoulder()));
-        BR.setPower(getHalfSpeed()*(-getRightVelocity() - getLeftShoulder() + getRightShoulder()));
+        FL.setPower(getLeftVelocity() - getLeftShoulder() + getRightShoulder());
+        FR.setPower(-getRightVelocity() + getLeftShoulder() - getRightShoulder());
+        BL.setPower(getLeftVelocity() + getLeftShoulder() - getRightShoulder());
+        BR.setPower(-getRightVelocity() - getLeftShoulder() + getRightShoulder());
     }
 
 
@@ -402,6 +419,21 @@ public class HeadControlsTeleOp extends OpMode {
                 BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 braked = false;
             }
+        }
+    }
+    public void useGlyphClamps(){
+        if ((gamepad2.b) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)){
+            if (clampOpen) {
+                leftGlyphClamp.setPosition(0.1);
+                rightGlyphClamp.setPosition(0.8);
+                clampOpen = false;
+            }
+            else if (!clampOpen){
+                leftGlyphClamp.setPosition(0.4);
+                rightGlyphClamp.setPosition(0.5);
+                clampOpen = true;
+            }
+            lastGlyphTime = System.currentTimeMillis();
         }
     }
 

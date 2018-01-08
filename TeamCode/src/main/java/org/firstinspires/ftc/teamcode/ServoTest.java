@@ -16,12 +16,14 @@ public class ServoTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
-        Servo relicArm;
-        relicArm            = hardwareMap.servo.get("relicArm");
+        Servo test;
+        test           = hardwareMap.servo.get("test");
+        //0.1 close, 0.4 open
+        //).8 close, 0.5 open
         for (double i = 0; i <= 1; i += 0.1){
             telemetry.addData("Pos", i);
             telemetry.update();
-            relicArm.setPosition(i);
+            test.setPosition(i);
             //Relic Arm down 0.15, over the wall .65
             sleep(500);
         }

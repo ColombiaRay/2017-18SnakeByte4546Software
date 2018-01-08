@@ -48,6 +48,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     Servo rightArm;
     Servo leftRelic;
     Servo rightRelic;
+    Servo leftGlyphClamp;
+    Servo rightGlyphClamp;
 
     BNO055IMU imu;
     ColorSensor colorFront;
@@ -66,6 +68,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     private DcMotor liftLeft;
     private DcMotor liftRight;
     private double pastTime;
+    private double previousYaw;
+    private double Yaw;
     private double integral;
     private double angleIntegral;
     private double angleDerivative;
@@ -88,10 +92,15 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double strafeDisplacement;
     private double previousStrafeError;
     private double time;
+    private DcMotor inTake;
     private int colorRec;
     private DistanceSensor jewelDistance;
     private double initialAutoAngle;
     private boolean gateOpen;
+    private double previousAngle;
+    private int revolutions;
+    private String jColor;
+    private boolean scored;
     //private Servo gateServo;
 
 
@@ -130,6 +139,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         backRightTunnel     = hardwareMap.crservo.get("BRT");
         frontLeftTunnel     = hardwareMap.crservo.get("FLT");
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
+        inTake              = hardwareMap.dcMotor.get("intake");
+
+        leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
+        rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
 
         jewelHitter = hardwareMap.servo.get("jewelhitter");
         jewelHitter.setDirection(Servo.Direction.REVERSE);
@@ -155,8 +168,20 @@ public abstract class AutoOpMode extends LinearOpMode {
         //colorBack.enableLed(true);
         jewelDistance = hardwareMap.get(DistanceSensor.class, "color");
         reportInitialized();
+        previousAngle = 0;
     }
 
+    public void initializeGyro(){
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+    }
 
     public void setPower(double velocity, double rotation, double strafe) throws InterruptedException {
         FL.setPower(velocity - rotation + strafe);
@@ -215,6 +240,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         return (angles.firstAngle * -1);
     }
 
+    public double getSpecialGyroYaw() throws InterruptedException {
+        Orientation angles = imu.getAngularOrientation();
+        double angle = angles.firstAngle * -1;
+        if (angle < 0){
+            angle = 360 + angle;
+        }
+        return angle;
+    }
+
     public void testGyro() throws InterruptedException {
         telemetry.addData("Yaw", getGyroYaw());
         telemetry.addData("Roll", getGyroRoll());
@@ -250,7 +284,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void lowerJewel() throws InterruptedException {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
-        while ((jewelHitter.getPosition() > 0.65) && (opModeIsActive())){
+        while ((jewelHitter.getPosition() > 0.60) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() - 0.04);
             sleep(50);
             idle();
@@ -493,92 +527,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         return Range.clip(-difference * 0.25/10, -0.125, 0.125);
     }
 
-    public void strafeToCorrectColumnRed() throws InterruptedException {
-        if (cryptoboxKey.equals("left")) {
-            moveStrafe(-0.6, 220);
-            setZero();
-            moveStrafe(-0.6, 305);
-            setZero();
-            moveStrafe(-0.6, 305);
-            setZero();
-        } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(-0.6, 220);
-            setZero();
-            moveStrafe(-0.6, 305);
-            setZero();
-        } else {
-            moveStrafe(-0.6, 220);
-            setZero();
-        }
-        expelGlyphs(4500);
-        moveForward(0.5, 100);
-        moveBackward(0.5,100);
-        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
-        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
-        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+    public double getStrafeCorrectionSpec(double desiredAngle) throws InterruptedException {
+        //+ means correction is turning right, - is turning left
+        double difference = getSpecialGyroYaw() - desiredAngle;
+        telemetry.addData("Difference", difference);
+        telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
+        telemetry.update();
+        return Range.clip(-difference * 0.25/10, -0.125, 0.125);
     }
 
-    public void strafeToCorrectColumnBlue() throws InterruptedException {
-        if (cryptoboxKey.equals("right")) {
-            moveStrafe(0.6, 200);
-            setZero();
-            moveStrafe(0.6, 305);
-            setZero();
-            moveStrafe(0.6, 305);
-            setZero();
-        } else if (cryptoboxKey.equals("center")) {
-            moveStrafe(0.6, 200);
-            setZero();
-            moveStrafe(0.6, 305);
-            setZero();
-        } else {
-            moveStrafe(0.6, 200);
-            setZero();
-        }
-        expelGlyphs(4500);
-        moveForward(0.5, 100);
-        moveBackward(0.5,100);
-        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
-        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
-        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
-    }
-
-    public void moveToCorrectColumnRed() throws InterruptedException {
-        cryptoboxKey = "right";
-        if (cryptoboxKey.equals("right")) {
-            moveBackwardPID(305,0.001, 0.0000007, 0.5);
-        } else if (cryptoboxKey.equals("center")) {
-            moveBackwardPID(325,0.001, 0.0000007, 0.5);
-        } else {
-            moveBackwardPID(345,0.001, 0.0000007, 0.5);
-        }
-        setZero();
-        pidTurnLeft(90);
-        expelGlyphs(4500);
-        moveForward(0.5, 100);
-        moveBackward(0.5,100);
-        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
-        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
-        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
-    }
-
-    public void moveToCorrectColumnBlue() throws InterruptedException {
-        if (cryptoboxKey.equals("right")) {
-            moveForwardPID(305,0.001, 0.0000007, 0.5);
-        } else if (cryptoboxKey.equals("center")) {
-            moveForwardPID(325,0.001, 0.0000007, 0.5);
-        } else {
-            moveForwardPID(345,0.001, 0.0000007, 0.5);
-        }
-        setZero();
-        pidTurnRight(90);
-        expelGlyphs(4500);
-        moveForward(0.5, 100);
-        moveBackward(0.5,100);
-        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
-        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
-        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
-    }
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
         scanImage();
@@ -650,6 +607,18 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
     }
 
+    //Strafe with straightener if the robot turns 180 degrees
+    public void moveStrafeSpecial(double strafe, int distance) throws InterruptedException {
+        double startStrafe = getStrafeEncoders();
+        setStartAngleSpec();
+        while ((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
+            setPower(0, getStrafeCorrectionSpec(startAngle),strafe);
+            telemetry.addData("distance", getStrafeEncoders() - startStrafe);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+    }
     /*
     //Moves the robot the the correct column (values not tested)
     public void moveKey() throws InterruptedException {
@@ -674,12 +643,19 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
+    public void setStartAngleSpec() throws InterruptedException {
+        startAngle = getSpecialGyroYaw();
+        telemetry.addData("Start",startAngle);
+    }
+
     public void findDisplacement() throws InterruptedException {
         displacement = Math.abs(getAvgEncoder() - startPos);
         telemetry.addData("Displacement", displacement);
     }
 
     public void findAngDisplacement() throws InterruptedException {
+        telemetry.addData("Yaw", getGyroYaw());
+        telemetry.addData("Angle", startAngle);
         angDisplacement = Math.abs(getGyroYaw() - startAngle);
         telemetry.addData("Angular Displacement", angDisplacement);
     }
@@ -693,12 +669,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         error = Math.abs(goalDistance - displacement);
     }
 
-    public void setInitialAngError(double goalAngle) {
+    public void setInitialAngError(double goalAngle) throws InterruptedException {
         angError = goalAngle;
     }
 
+
+
     public void findAngError(double goalAngle) throws InterruptedException {
         previousAngError = angError;
+        telemetry.addData("Goal", goalAngle);
         angError = (goalAngle - angDisplacement);
         telemetry.addData("Error", angError);
     }
@@ -1500,28 +1479,71 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void pidTurnRight(double angle) throws InterruptedException {
-        double kP = 0.25/angle;
+        double kP = 0.23/90;
+        setStartAngle();
+        setInitialAngError(angle);
+        while ((opModeIsActive()) && (angError > 0.25)){
+            findAngDisplacement();
+            findAngError(angle);
+            telemetry.update();
+            turn(kP * angError + 0.23);
+        }
+        setZero();
+    }
+
+    public void pidTurnLeft(double angle) throws InterruptedException {
+        double kP = 0.25/90;
         setStartAngle();
         setInitialAngError(angle);
         while ((opModeIsActive()) && (angError > 0.3)){
             findAngDisplacement();
             findAngError(angle);
             telemetry.update();
-            turn(kP * angError + 0.25);
+            turn(-(kP * angError + 0.23));
         }
         setZero();
-        sleep(200);
     }
 
-    public void pidTurnLeft(double angle) throws InterruptedException {
-        double kP = 0.25/angle;
+    public void pidTurnRightAndMove(double angle, double velocity) throws InterruptedException {
+        double kP = 0.23/angle;
         setStartAngle();
         setInitialAngError(angle);
-        while ((opModeIsActive()) && (angError > 0.3)){
+        Yaw = getGyroYaw();
+        while ((opModeIsActive()) && (angError > 0.25) && (!scored)){
             findAngDisplacement();
-            findAngError(90);
+            findAngError(angle);
             telemetry.update();
-            turn(-kP * angError + 0.25);
+            setPower(velocity, kP * angError + 0.23, 0);
+            previousYaw = Yaw;
+            Yaw = getGyroYaw();
+            telemetry.addData("Yaw Diff", Yaw - previousYaw);
+            if (Math.abs(Yaw - previousYaw) < 0.05){
+                scored = true;
+                telemetry.addData("Boo","Yah");
+                telemetry.update();
+            }
+        }
+        setZero();
+    }
+
+    public void pidTurnLeftAndMove(double angle, double velocity) throws InterruptedException {
+        double kP = 0.23/angle;
+        setStartAngle();
+        setInitialAngError(angle);
+        Yaw = getGyroYaw();
+        while ((opModeIsActive()) && (angError > 0.25) && (!scored)){
+            findAngDisplacement();
+            findAngError(angle);
+            telemetry.update();
+            setPower(velocity, -(kP * angError + 0.23), 0);
+            previousYaw = Yaw;
+            Yaw = getGyroYaw();
+            telemetry.addData("Yaw Diff", Yaw - previousYaw);
+            if (Math.abs(Yaw - previousYaw) < 0.01){
+                scored = true;
+                telemetry.addData("Boo","Yah");
+                telemetry.update();
+            }
         }
         setZero();
     }
@@ -1575,6 +1597,140 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
         return range;
     }
+
+    public void outputGlyphs(int timeMS, double power){
+        frontLeftTunnel.setPower(-1);
+        backLeftTunnel.setPower(-1);
+        frontRightTunnel.setPower(1);
+        backRightTunnel.setPower(-1);
+        sleep(timeMS);
+        frontLeftTunnel.setPower(0);
+        backLeftTunnel.setPower(0);
+        frontRightTunnel.setPower(0);
+        backRightTunnel.setPower(0);
+    }
+
+    public void strafeToRedColumnStrafe() throws InterruptedException {
+        moveForwardPID(325,0.001, 0.0000007, 0.5);
+        sleep(500);
+        if (cryptoboxKey.equals("left")){
+            moveStrafe(-0.6, 875);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafe(-0.6, 560);
+        }
+        else{
+            moveStrafe(-0.6, 300);
+        }
+        sleep(500);
+        moveForward(0.4,100);
+        fizzleIn(0.15,15);
+    }
+
+    public void strafeToBlueColumnStrafe() throws InterruptedException {
+        moveBackwardPID(250,0.001, 0.0000007, 0.5);
+        sleep(500);
+        pidTurnRight(90);
+        pidTurnRight(90);
+        sleep(500);
+        if (cryptoboxKey.equals("right")){
+            moveStrafeSpecial(0.6,580);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafeSpecial(0.6, 360);
+        }
+        else{
+            moveStrafeSpecial(0.6, 125);
+        }
+        sleep(500);
+        moveForward(0.4,150);
+        fizzleIn(0.15,15);
+    }
+
+    public void strafeToRedColumnTurn() throws InterruptedException {
+        moveForwardPID(400,0.001, 0.0000007, 0.5);
+        sleep(500);
+        pidTurnRight(90);
+        sleep(500);
+        if (cryptoboxKey.equals("left")){
+            moveStrafe(-0.6,585);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafe(-0.6,320);
+        }
+        sleep(500);
+        moveForward(0.4,100);
+        fizzleIn(0.1,15);
+    }
+
+    public void strafeToBlueColumnTurn() throws InterruptedException {
+        moveBackwardPID(250,0.001, 0.0000007, 0.5);
+        sleep(500);
+        pidTurnRight(90);
+        sleep(500);
+        if (cryptoboxKey.equals("right")){
+            moveStrafe(0.6,420);
+        }
+        else if (cryptoboxKey.equals("center")){
+            moveStrafe(0.6,230);
+        }
+        sleep(500);
+        moveForward(0.4,150);
+        fizzleIn(0.15,15);
+    }
+
+    public void fizzleIn(double velocity, double angle) throws InterruptedException {
+        int movement = 0;
+        scored = false;
+        int repetitions = 0;
+        int startPos = getAvgEncoder();
+        while((repetitions < 5) && (!scored)){
+            telemetry.addData("reps", repetitions);
+            telemetry.addData("movement", movement);
+            telemetry.update();
+            switch (movement){
+                case 0:
+                    pidTurnRightAndMove(angle, 0.1);
+                    movement ++;
+                    break;
+                case 1:
+                    pidTurnLeftAndMove(angle, 0.1);
+                    movement ++;
+                    break;
+                case 2:
+                    pidTurnLeftAndMove(angle, 0.1);
+                    movement ++;
+                    break;
+                case 3:
+                    pidTurnRightAndMove(angle, 0.1);
+                    movement -= 3;
+                    repetitions ++;
+                    break;
+            }
+        }
+        setZero();
+    }
+
+    public void simpleFizzleIn() throws InterruptedException{
+        double start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < 3){
+            if((int)(2*(System.currentTimeMillis() - start))%2 == 0){
+                turn(0.5);
+            }
+            else{
+                turn(-0.5);
+            }
+        }
+        setZero();
+    }
+
+    public void unclampGlyph(){
+        leftGlyphClamp.setPosition(0.4);
+        rightGlyphClamp.setPosition(0.5);
+    }
+
+
+
 
 
 //Gate on tunnel
@@ -1705,6 +1861,134 @@ public String chooseColor(char c) throws InterruptedException {
             setZero();
             turnLeftPID(20);
         }
-        raiseJewel();
+        raiseJewel()
+    }
+
+
+    public void strafeToCorrectColumnRed() throws InterruptedException {
+        if (cryptoboxKey.equals("left")) {
+            Values for League Meet 2
+            moveStrafe(-0.6, 220);
+            setZero();
+            moveStrafe(-0.6, 305);
+            setZero();
+            moveStrafe(-0.6, 305);
+            setZero();
+        } else if (cryptoboxKey.equals("center")) {
+            moveStrafe(-0.6, 220);
+            setZero();
+            moveStrafe(-0.6, 305);
+            setZero();
+                } else {
+                moveStrafe(-0.6, 220);
+                setZero();
+                }
+                expelGlyphs(4500);
+                moveForward(0.5, 100);
+                moveBackward(0.5,100);
+                //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+                //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+                //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+                }
+
+public void strafeToCorrectColumnBlue() throws InterruptedException {
+        if (cryptoboxKey.equals("right")) {
+        moveStrafe(0.6, 200);
+        setZero();
+        moveStrafe(0.6, 305);
+        setZero();
+        moveStrafe(0.6, 305);
+        setZero();
+        } else if (cryptoboxKey.equals("center")) {
+        moveStrafe(0.6, 200);
+        setZero();
+        moveStrafe(0.6, 305);
+        setZero();
+        } else {
+        moveStrafe(0.6, 200);
+        setZero();
+        }
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+        }
+
+public void moveToCorrectColumnRed() throws InterruptedException {
+        cryptoboxKey = "right";
+        if (cryptoboxKey.equals("right")) {
+        moveBackwardPID(305,0.001, 0.0000007, 0.5);
+        } else if (cryptoboxKey.equals("center")) {
+        moveBackwardPID(325,0.001, 0.0000007, 0.5);
+        } else {
+        moveBackwardPID(345,0.001, 0.0000007, 0.5);
+        }
+        setZero();
+        pidTurnLeft(90);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+        }
+
+public void moveToCorrectColumnBlue() throws InterruptedException {
+        if (cryptoboxKey.equals("right")) {
+        moveForwardPID(305,0.001, 0.0000007, 0.5);
+        } else if (cryptoboxKey.equals("center")) {
+        moveForwardPID(325,0.001, 0.0000007, 0.5);
+        } else {
+        moveForwardPID(345,0.001, 0.0000007, 0.5);
+        }
+        setZero();
+        pidTurnRight(90);
+        expelGlyphs(4500);
+        moveForward(0.5, 100);
+        moveBackward(0.5,100);
+        //moveForwardPID(100, 0.006, 0.0000012, 0.5);
+        //moveForwardPID(100, 0.002, 0.0000007, 0.5);
+        //moveBackwardPID(90, 0.004, 0.0000012, 0.5);
+        }
+ */
+
+/*Code for EN Pictures
+Week 4
+public void getJewelColorOneSensor() throws InterruptedException {
+        if (colorFront.blue() > colorFront.red()){
+            //jColor refers to color of jewel in the front
+            jColor = "blue";
+        }
+        else if (colorFront.red() > colorFront.blue()) {
+            jColor = "red";
+        }
+        else if (recCount < 3){
+            sleep(500);
+            getJewelColorOneSensor();
+        }
+        else{
+            telemetry.addData("Jewel Color", "Not Determined");
+            telemetry.update();
+        }
+    }
+
+    public void getJewelColorTwoSensors() throws InterruptedException {
+        if ((colorFront.blue() > colorBack.blue()) && (colorFront.red() < colorBack.red())){
+            //jColor refers to color of jewel in the front
+            jColor = "blue";
+        }
+        else if ((colorFront.blue() < colorBack.blue()) && (colorFront.red() > colorBack.red())){
+            jColor = "red";
+        }
+        else if (recCount < 3){
+            sleep(500);
+            getJewelColorTwoSensors();
+        }
+        else{
+            telemetry.addData("Jewel Color", "Not Determined");
+            telemetry.update();
+        }
     }
  */

@@ -20,6 +20,6 @@ public class AutoRedTurn extends AutoOpMode {
         lowerJewel();
         knockJewel();
         sleep(500);
-        moveToCorrectColumnRed();
+        //moveToCorrectColumnRed();
     }
 }
