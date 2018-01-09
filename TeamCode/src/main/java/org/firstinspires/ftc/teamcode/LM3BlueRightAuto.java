@@ -19,5 +19,6 @@ public class LM3BlueRightAuto extends AutoOpMode {
         sleep(500);
         strafeToBlueColumnTurn();
         unclampGlyph();
+        backUpFromGlyph();
     }
 }

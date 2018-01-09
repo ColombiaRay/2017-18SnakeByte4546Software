@@ -19,5 +19,7 @@ public class LM3RedAutoRight extends AutoOpMode {
         sleep(500);
         strafeToRedColumnStrafe();
         unclampGlyph();
+        backUpFromGlyph();
+
     }
 }

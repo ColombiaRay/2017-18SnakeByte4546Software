@@ -81,6 +81,33 @@ public class MattTunnel {
         }
     }
 
+    public void toggleIntakeTank(double lStick, double rStick){
+        if (rStick > 0.1){
+            frontLeftTunnel.setPower(-0.5);
+            backLeftTunnel.setPower(-0.5);
+        }
+        else if (rStick < -0.1){
+            frontLeftTunnel.setPower(0.5);
+            backLeftTunnel.setPower(0.5);
+        }
+        else{
+            frontLeftTunnel.setPower(0);
+            backLeftTunnel.setPower(0);
+        }
+        if (lStick > 0.1){
+            frontRightTunnel.setPower(0.5);
+            backRightTunnel.setPower(-0.5);
+        }
+        else if (lStick < -0.1){
+            frontRightTunnel.setPower(-0.5);
+            backRightTunnel.setPower(0.5);
+        }
+        else{
+            frontRightTunnel.setPower(0);
+            backRightTunnel.setPower(0);
+        }
+    }
+
 
     public void setBlocks() {
             frontLeftTunnel.setPower(0.5);

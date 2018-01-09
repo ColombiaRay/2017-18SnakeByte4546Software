@@ -37,6 +37,7 @@ public class HeadControlsTeleOp extends OpMode {
     private DcMotor leftLiftSlide;
     private DcMotor rightLiftSlide;
     private DcMotor liftMani;
+    private DcMotor relicMotor;
 
     // Matt Tunnel
     private DcMotor liftLeft;
@@ -46,6 +47,8 @@ public class HeadControlsTeleOp extends OpMode {
     private CRServo backRightTunnel;
     private CRServo frontLeftTunnel;
     private CRServo backLeftTunnel;
+    private DcMotor relicLift;
+
 
     private Servo leftMani;
     private Servo rightMani;
@@ -82,11 +85,8 @@ public class HeadControlsTeleOp extends OpMode {
 
 
     private double relicMoveTime;
-    private double relicPos;
+    private int relicPos;
 
-
-    // added 11/30- for lift motor extend/retract
-    private DcMotor relicLift;
 
     // added 12/12- for clamp lift
 
@@ -100,8 +100,6 @@ public class HeadControlsTeleOp extends OpMode {
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
 
-    public HeadControlsTeleOp() {
-    }
 
     @Override
     public void init() {
@@ -113,10 +111,10 @@ public class HeadControlsTeleOp extends OpMode {
         Expansion Hub 2: Servo 0 is JewelHitter
         */
 
-        FL                  = hardwareMap.dcMotor.get("FL");
-        FR                  = hardwareMap.dcMotor.get("FR");
-        BR                  = hardwareMap.dcMotor.get("BR");
-        BL                  = hardwareMap.dcMotor.get("BL");
+        FL = hardwareMap.dcMotor.get("FL");
+        FR = hardwareMap.dcMotor.get("FR");
+        BR = hardwareMap.dcMotor.get("BR");
+        BL = hardwareMap.dcMotor.get("BL");
         //leftArm             = hardwareMap.servo.get("LRelicArm");
         //rightArm            = hardwareMap.servo.get("RRelicArm");
         //leftRelic           = hardwareMap.servo.get("LRelic");
@@ -126,45 +124,44 @@ public class HeadControlsTeleOp extends OpMode {
         //leftLiftSlide       = hardwareMap.dcMotor.get("LSlide");
         //rightLiftSlide      = hardwareMap.dcMotor.get("RSlide");
         //liftMani            = hardwareMap.dcMotor.get("liftMani");
-        jewelHitter         = hardwareMap.servo.get("jewelhitter");
+        jewelHitter = hardwareMap.servo.get("jewelhitter");
         //liftLeft            = hardwareMap.dcMotor.get("leftLift");
         //liftRight           = hardwareMap.dcMotor.get("rightLift");
-        inTake              = hardwareMap.dcMotor.get("intake");
+        inTake = hardwareMap.dcMotor.get("intake");
 
-        frontRightTunnel    = hardwareMap.crservo.get("FRT");
-        backRightTunnel     = hardwareMap.crservo.get("BRT");
-        frontLeftTunnel     = hardwareMap.crservo.get("FLT");
-        backLeftTunnel      = hardwareMap.crservo.get("BLT");
+        frontRightTunnel = hardwareMap.crservo.get("FRT");
+        backRightTunnel = hardwareMap.crservo.get("BRT");
+        frontLeftTunnel = hardwareMap.crservo.get("FLT");
+        backLeftTunnel = hardwareMap.crservo.get("BLT");
         leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
         rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
         relic = hardwareMap.servo.get("relic");
+        relicMotor = hardwareMap.dcMotor.get("relicMotor");
         recentPressTime = 0;
+        relicPos = 3;
         //gate = hardwareMap.servo.get("gate");
 
         //relicGrabber        = hardwareMap.servo.get("relicGrabber");
-        relicArm            = hardwareMap.servo.get("relicArm");
-        halfSpeed           = false;
-        braked              = false;
-        liftOut             = false;
-        relicOut            = false;
-        clampClosed         = false;
-        gateClosed            = false;
-        relicClosed       = false;
-        rightMotion         = 0;
-        leftMotion          = 0;
-        relicPos            = 0;
+        relicArm = hardwareMap.servo.get("relicArm");
+        halfSpeed = false;
+        braked = false;
+        liftOut = false;
+        relicOut = false;
+        clampClosed = false;
+        gateClosed = false;
+        relicClosed = false;
+        rightMotion = 0;
+        leftMotion = 0;
         //:)liftLeft = hardwareMap.dcMotor.get("LLift");
         //:)liftRight = hardwareMap.dcMotor.get("RLift");
-        tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
+        tunnel = new MattTunnel(liftLeft, liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         //:)relicGrabber        = hardwareMap.servo.get("relic");
         currentTime = 0;
         //relicClamp          = hardwareMap.servo.get("relicClamp");
 
-        //:)relicLift           = hardwareMap.dcMotor.get("relicLift");
 
-
-        leftCLift            = hardwareMap.dcMotor.get("LeftClampLift");
-        rightCLift           = hardwareMap.dcMotor.get("RightClampLift");
+        leftCLift = hardwareMap.dcMotor.get("LeftClampLift");
+        rightCLift = hardwareMap.dcMotor.get("RightClampLift");
 
         //rightMani.setDirection(Servo.Direction.FORWARD);
         //leftMani.setDirection(Servo.Direction.REVERSE);
@@ -179,6 +176,11 @@ public class HeadControlsTeleOp extends OpMode {
         BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
+    //Activates when start, not init is pressed. Use it for setting servos to initial positions
+    public void start() {
+        relicArm.setPosition(1);
+    }
+
     @Override
     public void loop() {
         grabRelic();
@@ -189,54 +191,50 @@ public class HeadControlsTeleOp extends OpMode {
         toggleHalfSpeed();
         useJewel();
         useRelicArm();
-        //raiseClamps();
+        raiseClamps();
         useGlyphClamps();
-        tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
+        tunnel.toggleIntakeTank(gamepad2.left_stick_y, gamepad2.right_stick_y);
+        //tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
         //alterRelicMotion();
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
-        //if(jewelHitter.getPosition() != 1.0) jewelHitter.setPosition(1.0);
         //manipLift();
+        extendRelic();
 
     }
 
-    public double getRightVelocity()
-    {
+    public double getRightVelocity() {
         if (Math.abs(gamepad1.right_stick_y) > 0.05)
             return gamepad1.right_stick_y;
         return 0;
     }
 
-    public double getLeftVelocity()
-    {
+    public double getLeftVelocity() {
         if (Math.abs(gamepad1.left_stick_y) > 0.05)
             return gamepad1.left_stick_y;
         return 0;
     }
 
-    public double getLeftShoulder()
-    {
+    public double getLeftShoulder() {
         if (gamepad1.left_bumper)
             return 1.0;
         return 0;
     }
 
-    public void useJewel(){
-        if (gamepad1.dpad_left){
+    public void useJewel() {
+        if (gamepad1.dpad_left) {
             jewelHitter.setPosition(0.55);
-        }
-        else if (gamepad1.dpad_right){
+        } else if (gamepad1.dpad_right) {
             jewelHitter.setPosition(1);
         }
     }
 
-    public void alterRelicMotion(){
-        if ((gamepad2.x) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS) ){
+    public void alterRelicMotion() {
+        if ((gamepad2.x) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS)) {
             relic.setPosition(0.25);
             relicRaising = true;
             relicLowering = false;
             relicMoveTime = System.currentTimeMillis();
-        }
-        else if ((gamepad2.a) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS)){
+        } else if ((gamepad2.a) && (System.currentTimeMillis() - relicMoveTime > DELAY_TIME_MS)) {
             relic.setPosition(0.65);
             relicLowering = true;
             relicRaising = false;
@@ -245,16 +243,15 @@ public class HeadControlsTeleOp extends OpMode {
 
     }
 
-    public void changeRelicPos(){
-        if (System.currentTimeMillis() - lastRelicTime > RELIC_MOTION_TIME_MS){
-            if (relicRaising){
-                if (relic.getPosition() > 0.25){
+    public void changeRelicPos() {
+        if (System.currentTimeMillis() - lastRelicTime > RELIC_MOTION_TIME_MS) {
+            if (relicRaising) {
+                if (relic.getPosition() > 0.25) {
                     relic.setPosition(relic.getPosition() - 0.05);
                     lastRelicTime = System.currentTimeMillis();
                 }
-            }
-            else if (relicLowering){
-                if (relic.getPosition() < 0.65){
+            } else if (relicLowering) {
+                if (relic.getPosition() < 0.65) {
                     relic.setPosition(relic.getPosition() + 0.05);
                     lastRelicTime = System.currentTimeMillis();
                 }
@@ -269,8 +266,7 @@ public class HeadControlsTeleOp extends OpMode {
                 halfSpeed = false;
                 telemetry.addData("halfspeed", "disabled");
                 telemetry.update();
-            }
-            else if (!halfSpeed) {
+            } else if (!halfSpeed) {
                 halfSpeed = true;
                 telemetry.addData("halfspeed", "enabled");
                 telemetry.update();
@@ -280,33 +276,31 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
 
-    public double getRightShoulder()
-    {
+    public double getRightShoulder() {
         if (gamepad1.right_bumper)
             return 1.0;
         return 0;
     }
 
-    public double getHalfSpeed(){
+    public double getHalfSpeed() {
         if (halfSpeed)
             return 0.5;
         return 1;
 
     }
 
-    public void grabRelic(){
+    public void grabRelic() {
         if (System.currentTimeMillis() - recentPressTime > 150) {
             telemetry.addData("a", "a");
-            if (gamepad2.right_stick_button) {
-                if (!relicClosed){
+            if (gamepad2.x) {
+                if (!relicClosed) {
                     telemetry.addData("a", "a");
                     relic.setPosition(1);
-                    relicClosed = false;
-                }
-                else if (relicClosed){
+                    relicClosed = true;
+                } else if (relicClosed) {
                     telemetry.addData("a", "a");
                     relic.setPosition(0);
-                    relicClosed = true;
+                    relicClosed = false;
                 }
                 telemetry.update();
             }
@@ -329,16 +323,7 @@ public class HeadControlsTeleOp extends OpMode {
     }
     */
 
-    public void manipLift() {
-        if (gamepad2.dpad_up) {
-            relicLift.setPower(1);
-        } else if (gamepad2.dpad_down) {
-            relicLift.setPower(-1);
-        }
-        else {
-            relicLift.setPower(0);
-        }
-    }
+
 
     /*
     public void useGate() {
@@ -358,39 +343,48 @@ public class HeadControlsTeleOp extends OpMode {
 
     //Jewel Hitter (have not tested positions)
 
-    public void useRelicArm(){
+
+    public void useRelicArm() {
         if (System.currentTimeMillis() - recentRelicArmTime > DELAY_TIME_MS) {
-            if (gamepad2.a) {
-                relicArm.setPosition(0.05);
-                relicPos = 1;
-                recentRelicArmTime = System.currentTimeMillis();
-            } else if (gamepad2.x) {
-                relicArm.setPosition(0.4);
-                relicPos = 2;
-                recentRelicArmTime = System.currentTimeMillis();
-            } else if (gamepad2.y) {
-                relicArm.setPosition(1);
-                relicPos = 3;
-                recentRelicArmTime = System.currentTimeMillis();
+            if (gamepad2.left_bumper) {
+                if (relicPos == 2) {
+                    telemetry.addData("Position", "up");
+                    relicArm.setPosition(1);
+                    relicPos = 3;
+                    recentRelicArmTime = System.currentTimeMillis();
+                } else if (relicPos == 1) {
+                    telemetry.addData("Position", "mid");
+                    relicArm.setPosition(0.4);
+                    relicPos = 2;
+                    recentRelicArmTime = System.currentTimeMillis();
+                }
+            } else if (gamepad2.right_bumper) {
+                if (relicPos == 3) {
+                    relicArm.setPosition(0.4);
+                    relicPos = 2;
+                    recentRelicArmTime = System.currentTimeMillis();
+                } else if (relicPos == 2) {
+                    relicArm.setPosition(0.05);
+                    relicPos = 1;
+                    recentRelicArmTime = System.currentTimeMillis();
+                }
             }
         }
     }
 
-    public void raiseClamps(){
-        if (gamepad2.right_bumper){
+
+    public void raiseClamps() {
+        if (gamepad2.y) {
             rightCLift.setPower(0.7);
-            leftCLift.setPower(-0.7);
-        }
-        else if (gamepad2.left_bumper){
+            leftCLift.setPower(-0.3);
+        } else if (gamepad2.a) {
             rightCLift.setPower(-0.7);
-            leftCLift.setPower(0.7);
-        }
-        else{
+            leftCLift.setPower(0.3);
+        } else {
             rightCLift.setPower(0);
             leftCLift.setPower(0);
         }
     }
-
 
 
     public void setPower() {
@@ -401,9 +395,8 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
 
-
     //Has some potential for balancing
-    public void brake(){
+    public void brake() {
         if (gamepad2.left_bumper) {
             if (!braked) {
                 FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -411,8 +404,7 @@ public class HeadControlsTeleOp extends OpMode {
                 FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 braked = true;
-            }
-            else {
+            } else {
                 FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -421,19 +413,29 @@ public class HeadControlsTeleOp extends OpMode {
             }
         }
     }
-    public void useGlyphClamps(){
-        if ((gamepad2.b) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)){
+
+    public void useGlyphClamps() {
+        if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
             if (clampOpen) {
-                leftGlyphClamp.setPosition(0.1);
-                rightGlyphClamp.setPosition(0.8);
+                leftGlyphClamp.setPosition(0.07);
+                rightGlyphClamp.setPosition(0.83);
                 clampOpen = false;
-            }
-            else if (!clampOpen){
-                leftGlyphClamp.setPosition(0.4);
-                rightGlyphClamp.setPosition(0.5);
+            } else if (!clampOpen) {
+                leftGlyphClamp.setPosition(0.35);
+                rightGlyphClamp.setPosition(0.55);
                 clampOpen = true;
             }
             lastGlyphTime = System.currentTimeMillis();
+        }
+    }
+
+    public void extendRelic() {
+        if (gamepad2.dpad_up) {
+            relicMotor.setPower(1);
+        } else if (gamepad2.dpad_down) {
+            relicMotor.setPower(-1);
+        } else {
+            relicMotor.setPower(0);
         }
     }
 

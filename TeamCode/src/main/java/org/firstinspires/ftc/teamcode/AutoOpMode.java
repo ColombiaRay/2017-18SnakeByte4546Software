@@ -1660,7 +1660,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
         sleep(500);
         moveForward(0.4,100);
-        fizzleIn(0.1,15);
+        fizzleIn(0.15,15);
     }
 
     public void strafeToBlueColumnTurn() throws InterruptedException {
@@ -1727,6 +1727,19 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void unclampGlyph(){
         leftGlyphClamp.setPosition(0.4);
         rightGlyphClamp.setPosition(0.5);
+    }
+
+    public void clampGlyph(){
+        leftGlyphClamp.setPosition(0.1);
+        rightGlyphClamp.setPosition(0.8);
+    }
+
+    public void backUpFromGlyph() throws InterruptedException {
+        moveBackward(0.3,100);
+    }
+
+    public void backUpFromColumn() throws InterruptedException{
+        moveBackward(0.3,50);
     }
 
 
