@@ -377,10 +377,12 @@ public class HeadControlsTeleOp extends OpMode {
         if (gamepad2.y) {
             rightCLift.setPower(0.7);
             leftCLift.setPower(-0.3);
-        } else if (gamepad2.a) {
+        }
+        else if (gamepad2.left_bumper){
             rightCLift.setPower(-0.7);
             leftCLift.setPower(0.3);
-        } else {
+        }
+        else{
             rightCLift.setPower(0);
             leftCLift.setPower(0);
         }
