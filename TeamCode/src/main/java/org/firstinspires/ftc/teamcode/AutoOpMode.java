@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -173,6 +174,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         jewelDistance = hardwareMap.get(DistanceSensor.class, "color");
         reportInitialized();
         previousAngle = 0;
+
+        ElapsedTime time = new ElapsedTime();
     }
 
     public void initializeGyro(){
@@ -289,11 +292,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
         while ((jewelHitter.getPosition() > 0.60) && (opModeIsActive())){
-            jewelHitter.setPosition(jewelHitter.getPosition() - 0.04);
-            sleep(50);
+            jewelHitter.setPosition(jewelHitter.getPosition() - 0.01);
+            sleep(30);
             idle();
         }
-
     }
 
     public void raiseJewel() throws InterruptedException {
@@ -372,6 +374,22 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void moveBackward(double velocity, int distance) throws InterruptedException {
         int startPos = getAvgEncoder();
         while ((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
+            moveBackward(velocity);
+            telemetry.addData("distance", getAvgEncoder() - startPos);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+        if (Math.abs(getAvgEncoder() - startPos) > distance + 50) {
+            telemetry.addData("overshoot", "fix");
+            telemetry.update();
+        }
+    }
+
+    public void moveBackwardMaxTime(double velocity, int distance, double timeMS) throws InterruptedException {
+        int startPos = getAvgEncoder();
+        double startTime = System.currentTimeMillis();
+        while ((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive()) && (System.currentTimeMillis() - startTime < 1000)) {
             moveBackward(velocity);
             telemetry.addData("distance", getAvgEncoder() - startPos);
             telemetry.update();
@@ -1739,7 +1757,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void backUpFromGlyph() throws InterruptedException {
-        moveBackward(0.3,100);
+        moveBackward(0.3,50);
     }
 
     public void backUpFromColumn() throws InterruptedException{

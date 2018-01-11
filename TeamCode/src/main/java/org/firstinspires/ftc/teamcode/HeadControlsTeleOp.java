@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
+        package org.firstinspires.ftc.teamcode;
+
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+        import com.qualcomm.robotcore.hardware.CRServo;
+        import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by raymo on 10/4/17.
@@ -377,12 +378,10 @@ public class HeadControlsTeleOp extends OpMode {
         if (gamepad2.y) {
             rightCLift.setPower(0.7);
             leftCLift.setPower(-0.3);
-        }
-        else if (gamepad2.left_bumper){
+        } else if (gamepad2.a) {
             rightCLift.setPower(-0.7);
             leftCLift.setPower(0.3);
-        }
-        else{
+        } else {
             rightCLift.setPower(0);
             leftCLift.setPower(0);
         }
@@ -461,7 +460,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightArm.setPosition(0.5);
         }
     }
-
     public void setLiftSlide(){
         if (gamepad2.left_stick_y < -0.1){
             leftLiftSlide.setPower(-1);
@@ -476,7 +474,6 @@ public class HeadControlsTeleOp extends OpMode {
             leftLiftSlide.setPower(0);
         }
     }
-
     public void useRelicGrabber() {
         if (gamepad2.right_stick_y > 0.05){
             relicGrabber.setPosition(1);
@@ -494,9 +491,7 @@ public class HeadControlsTeleOp extends OpMode {
             relicClamp.setPosition(1);
             clampClosed = false;
         }
-
     }
-
     //clamp for glyphs
     public void setManiPower(){
         if (gamepad2.b){
@@ -513,7 +508,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightMani.setPosition(0.5);
         }
     }
-
     public void grapRelic() {
         if(gamepad2.x) {
             leftRelicPosition += .005;
@@ -528,7 +522,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightRelic.setPosition(rightRelicPosition);
         }
     }
-
     public void pickRelic(){
         if(gamepad2.x) {
             leftRelic.setPosition(1);
@@ -539,7 +532,6 @@ public class HeadControlsTeleOp extends OpMode {
             rightRelic.setPosition(1);
         }
     }
-
     public void raiseMani() {
         if (gamepad2.dpad_down){
             liftMani.setPower(1);

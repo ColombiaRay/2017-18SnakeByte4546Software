@@ -13,7 +13,6 @@ public class JewelHittingTest extends AutoOpMode {
         initialize();
         setAlliance('r');
         waitForStart();
-        lowerJewel();
         knockJewel();
     }
 }
