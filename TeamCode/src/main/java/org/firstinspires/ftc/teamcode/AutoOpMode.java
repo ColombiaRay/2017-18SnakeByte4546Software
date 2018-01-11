@@ -105,6 +105,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     Servo relicArm;
     MattTunnel tunnel;
     private boolean scored;
+    ElapsedTime timer;
     //private Servo gateServo;
 
 
@@ -175,7 +176,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         reportInitialized();
         previousAngle = 0;
 
-        ElapsedTime time = new ElapsedTime();
+        ElapsedTime timer = new ElapsedTime();
+    }
+
+    public void resetTime(){
+        timer.reset();
     }
 
     public void initializeGyro(){
@@ -293,7 +298,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         sleep(1000);
         while ((jewelHitter.getPosition() > 0.60) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() - 0.01);
-            sleep(30);
+            sleep(25);
             idle();
         }
     }
@@ -386,11 +391,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
-    public void moveBackwardMaxTime(double velocity, int distance, double timeMS) throws InterruptedException {
+    public void moveForwarddMaxTime(double velocity, int distance, double timeMS) throws InterruptedException {
         int startPos = getAvgEncoder();
         double startTime = System.currentTimeMillis();
         while ((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive()) && (System.currentTimeMillis() - startTime < 1000)) {
-            moveBackward(velocity);
+            moveForward(velocity);
             telemetry.addData("distance", getAvgEncoder() - startPos);
             telemetry.update();
             idle();
@@ -501,7 +506,7 @@ public abstract class AutoOpMode extends LinearOpMode {
                 relativeLayout.setBackgroundColor(Color.RED);
             }
         });
-        while ((System.currentTimeMillis() - scanTime < 10000) && (opModeIsActive()) && (!detected)) {
+        while ((System.currentTimeMillis() - scanTime < 5000) && (opModeIsActive()) && (!detected)) {
             RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
             if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
@@ -1645,7 +1650,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(-0.6, 300);
         }
         sleep(500);
-        moveForward(0.4,100);
+        moveForwarddMaxTime(0.4,150, 1000);
         fizzleIn(0.15,15);
     }
 
@@ -1665,12 +1670,12 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafeSpecial(0.6, 125);
         }
         sleep(500);
-        moveForward(0.4,150);
+        moveForwarddMaxTime(0.4,150, 1000);
         fizzleIn(0.15,15);
     }
 
     public void strafeToRedColumnTurn() throws InterruptedException {
-        moveForwardPID(400,0.001, 0.0000007, 0.5);
+        moveForwardPID(430,0.001, 0.0000007, 0.5);
         sleep(500);
         pidTurnRight(90);
         sleep(500);
@@ -1681,7 +1686,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(-0.6,320);
         }
         sleep(500);
-        moveForward(0.4,100);
+        moveForwarddMaxTime(0.4,150, 1000);
         fizzleIn(0.15,15);
     }
 
@@ -1697,7 +1702,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(0.6,230);
         }
         sleep(500);
-        moveForward(0.4,150);
+        moveForwarddMaxTime(0.4,150, 1000);
         fizzleIn(0.15,15);
     }
 
@@ -1706,7 +1711,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         scored = false;
         int repetitions = 0;
         int startPos = getAvgEncoder();
-        while((repetitions < 5) && (!scored)){
+        while((repetitions < 5) && (!scored) && (opModeIsActive())){
             telemetry.addData("reps", repetitions);
             telemetry.addData("movement", movement);
             telemetry.update();

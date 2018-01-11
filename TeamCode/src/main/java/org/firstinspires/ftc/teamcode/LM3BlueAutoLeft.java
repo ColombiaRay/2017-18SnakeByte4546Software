@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 12/29/2017.
  */
 
-@Autonomous
+@Autonomous (name = "[LM3]BlueAutoLeft")
 public class LM3BlueAutoLeft extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

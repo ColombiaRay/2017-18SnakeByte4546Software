@@ -6,8 +6,9 @@
         import com.qualcomm.robotcore.hardware.CRServo;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.Servo;
+        import com.qualcomm.robotcore.util.ElapsedTime;
 
-/**
+        /**
  * Created by raymo on 10/4/17.
  */
 
@@ -71,6 +72,7 @@ public class HeadControlsTeleOp extends OpMode {
     private boolean relicOut;
     private boolean clampClosed;
     private boolean gateClosed;
+    private boolean parked;
     private Servo gateServo;
     private double recentPressTime;
     private double recentRelicArmTime = 0;
@@ -100,6 +102,7 @@ public class HeadControlsTeleOp extends OpMode {
 
     //jewelstate 0 is upright, 1 is near upright, 2 is position to hit jewel
     String jewelState = "down";
+    ElapsedTime timer = new ElapsedTime();
 
 
     @Override
@@ -180,6 +183,7 @@ public class HeadControlsTeleOp extends OpMode {
     //Activates when start, not init is pressed. Use it for setting servos to initial positions
     public void start() {
         relicArm.setPosition(1);
+        timer.reset();
     }
 
     @Override
@@ -266,11 +270,9 @@ public class HeadControlsTeleOp extends OpMode {
             if (halfSpeed) {
                 halfSpeed = false;
                 telemetry.addData("halfspeed", "disabled");
-                telemetry.update();
             } else if (!halfSpeed) {
                 halfSpeed = true;
                 telemetry.addData("halfspeed", "enabled");
-                telemetry.update();
             }
             lastTime = System.currentTimeMillis();
         }
@@ -292,14 +294,11 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void grabRelic() {
         if (System.currentTimeMillis() - recentPressTime > 150) {
-            telemetry.addData("a", "a");
             if (gamepad2.x) {
                 if (!relicClosed) {
-                    telemetry.addData("a", "a");
                     relic.setPosition(1);
                     relicClosed = true;
                 } else if (relicClosed) {
-                    telemetry.addData("a", "a");
                     relic.setPosition(0);
                     relicClosed = false;
                 }
@@ -349,22 +348,24 @@ public class HeadControlsTeleOp extends OpMode {
         if (System.currentTimeMillis() - recentRelicArmTime > DELAY_TIME_MS) {
             if (gamepad2.left_bumper) {
                 if (relicPos == 2) {
-                    telemetry.addData("Position", "up");
+                    telemetry.addData("RelicArmPosition", "up");
                     relicArm.setPosition(1);
                     relicPos = 3;
                     recentRelicArmTime = System.currentTimeMillis();
                 } else if (relicPos == 1) {
-                    telemetry.addData("Position", "mid");
+                    telemetry.addData("RelicArmPosition", "mid");
                     relicArm.setPosition(0.4);
                     relicPos = 2;
                     recentRelicArmTime = System.currentTimeMillis();
                 }
             } else if (gamepad2.right_bumper) {
                 if (relicPos == 3) {
+                    telemetry.addData("RelicArmPosition", "mid");
                     relicArm.setPosition(0.4);
                     relicPos = 2;
                     recentRelicArmTime = System.currentTimeMillis();
                 } else if (relicPos == 2) {
+                    telemetry.addData("RelicArmPosition", "down");
                     relicArm.setPosition(0.05);
                     relicPos = 1;
                     recentRelicArmTime = System.currentTimeMillis();
@@ -440,6 +441,22 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+    public void getRemainingTime(){
+        telemetry.addData("Time Remaining", secondsToMinutes());
+    }
+
+    public String secondsToMinutes(){
+        double seconds = 120 - timer.seconds();
+        if (seconds <= 1){
+            backupRelicDrop();
+        }
+        return seconds/60 + ":" + seconds%60;
+    }
+
+    //Method to drop relic at the last second
+    public void backupRelicDrop(){
+        relic.setPosition(0);
+    }
 
 
 

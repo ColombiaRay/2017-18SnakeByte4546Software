@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 12/5/2017.
  */
 
-@Autonomous
+@Autonomous (name = "[Outdated]JustJewelRed")
 public class JustJewelRed extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
