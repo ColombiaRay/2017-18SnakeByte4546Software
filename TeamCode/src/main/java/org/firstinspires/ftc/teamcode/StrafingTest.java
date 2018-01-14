@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 12/21/2017.
  */
 
-@Autonomous
+//@Autonomous
 public class StrafingTest extends AutoOpMode {
 
     @Override

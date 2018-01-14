@@ -12,17 +12,9 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         setAlliance('r');
         initialize();
-        setInitialAngle();
         waitForStart();
-        scanImage();
-        lowerJewel();
-        knockJewel();
-        //raiseLift(1500);
-        sleep(500);
-        moveForwardPID(325,0.001, 0.0000007, 0.5);
-        //lowerLift(1500);
-        stopMovement();
-        sleep(500);
+        moveBackward(0.4,55);
+        sleep(4000);
         //strafeToCorrectColumnRed();
 
         /*

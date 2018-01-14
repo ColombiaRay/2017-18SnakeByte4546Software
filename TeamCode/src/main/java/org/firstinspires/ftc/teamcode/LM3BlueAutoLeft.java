@@ -19,7 +19,6 @@ public class LM3BlueAutoLeft extends AutoOpMode {
         knockJewel();
         sleep(500);
         strafeToBlueColumnStrafe();
-        unclampGlyph();
-        backUpFromGlyph();
+        executeEndActions();
     }
 }

@@ -7,6 +7,7 @@ import android.view.View;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -105,6 +106,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     Servo relicArm;
     MattTunnel tunnel;
     private boolean scored;
+    ModernRoboticsI2cRangeSensor rangeSensor;
     ElapsedTime timer;
     //private Servo gateServo;
 
@@ -146,6 +148,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
         inTake              = hardwareMap.dcMotor.get("intake");
         relicArm            = hardwareMap.servo.get("relicArm");
+        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
         rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
@@ -202,14 +205,14 @@ public abstract class AutoOpMode extends LinearOpMode {
         BR.setPower(-velocity - rotation + strafe);
     }
 
-    public void setZero() {
+    public void setZero() throws InterruptedException{
         FL.setPower(0);
         FR.setPower(0);
         BL.setPower(0);
         BR.setPower(0);
     }
 
-    public void reportInitialized() {
+    public void reportInitialized() throws InterruptedException{
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
         if (alliance == 98) {
@@ -600,7 +603,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         rightMani.setPosition(0.5);
     }
 
-    public int getStrafeEncoders() {
+    public int getStrafeEncoders() throws InterruptedException{
         int backLeftEncoderValue = BL.getCurrentPosition();
         int backRightEncoderValue = BR.getCurrentPosition();
         int frontRightEncoderValue = FR.getCurrentPosition();
@@ -716,13 +719,13 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
 
-    public void setKValues(double pValue, double iValue, double dValue) {
+    public void setKValues(double pValue, double iValue, double dValue) throws InterruptedException{
         kP = pValue;
         kI = iValue;
         kD = dValue;
     }
 
-    public void getPercentTraveled(double goalDistance) {
+    public void getPercentTraveled(double goalDistance) throws InterruptedException{
         double percent = displacement / goalDistance * 100;
 
         if (Math.abs(100 - percent) <= 2) {
@@ -736,7 +739,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Distance", displacement + "/" + goalDistance);
     }
 
-    public void getPercentTurned(double goalAngle) {
+    public void getPercentTurned(double goalAngle) throws InterruptedException{
         double percent = angDisplacement / goalAngle * 100;
 
         if (Math.abs(100 - percent) <= 2) {
@@ -762,7 +765,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
-    public void reportSuccess(int distance) {
+    public void reportSuccess(int distance) throws InterruptedException{
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
         if (Math.abs(displacement - distance) <= 5) {
@@ -789,40 +792,40 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Proportion Stuff
 
-    public double getProportion() {
+    public double getProportion() throws InterruptedException{
         telemetry.addData("Proportion", kP * error);
         return kP * error;
     }
 
-    public double getAngProportion() {
+    public double getAngProportion() throws InterruptedException{
         telemetry.addData("Proportion", kP * angError);
         return kP * angError;
     }
 
-    public double getStrafeProportion() {
+    public double getStrafeProportion() throws InterruptedException{
         telemetry.addData("Proportion", kP * strafeError);
         return kP * strafeError;
     }
 
     //Integral Stuff
-    public void findDeltaT() {
+    public void findDeltaT() throws InterruptedException{
         deltaT = (System.currentTimeMillis() - pastTime);
         pastTime = System.currentTimeMillis();
         time += deltaT;
         telemetry.addData("Time", time);
     }
 
-    public void resetIntegral() {
+    public void resetIntegral() throws InterruptedException{
         integral = 0;
         angError = 0;
         pastTime = System.currentTimeMillis();
     }
 
-    public void resetAngIntegral() {
+    public void resetAngIntegral() throws InterruptedException {
         angleIntegral = 0;
     }
 
-    public void tallyIntegral() {
+    public void tallyIntegral() throws InterruptedException{
         integral += deltaT * error;
     }
 
@@ -1209,12 +1212,12 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //PID Strafing
 
-    public void setStartStrafePos() {
+    public void setStartStrafePos() throws InterruptedException{
         startPos = getStrafeEncoders();
         findStrafeDisplacement();
     }
 
-    public void findStrafeDisplacement() {
+    public void findStrafeDisplacement() throws InterruptedException{
         displacement = Math.abs(getStrafeEncoders() - startPos);
     }
 
@@ -1544,10 +1547,8 @@ public abstract class AutoOpMode extends LinearOpMode {
             previousYaw = Yaw;
             Yaw = getGyroYaw();
             telemetry.addData("Yaw Diff", Yaw - previousYaw);
-            if (Math.abs(Yaw - previousYaw) < 0.05){
+            if (Math.abs(Yaw - previousYaw) < 0.03){
                 scored = true;
-                telemetry.addData("Boo","Yah");
-                telemetry.update();
             }
         }
         setZero();
@@ -1641,17 +1642,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         moveForwardPID(325,0.001, 0.0000007, 0.5);
         sleep(500);
         if (cryptoboxKey.equals("left")){
-            moveStrafe(-0.6, 875);
+            moveStrafe(-0.6, 925);
         }
         else if (cryptoboxKey.equals("center")){
-            moveStrafe(-0.6, 560);
+            moveStrafe(-0.6, 600);
         }
         else{
-            moveStrafe(-0.6, 300);
+            moveStrafe(-0.6, 330);
         }
         sleep(500);
-        moveForwarddMaxTime(0.4,150, 1000);
-        fizzleIn(0.15,15);
     }
 
     public void strafeToBlueColumnStrafe() throws InterruptedException {
@@ -1661,17 +1660,16 @@ public abstract class AutoOpMode extends LinearOpMode {
         pidTurnRight(90);
         sleep(500);
         if (cryptoboxKey.equals("right")){
-            moveStrafeSpecial(0.6,580);
+            moveStrafeSpecial(0.6,625);
         }
         else if (cryptoboxKey.equals("center")){
-            moveStrafeSpecial(0.6, 360);
+            moveStrafeSpecial(0.6, 390);
         }
         else{
-            moveStrafeSpecial(0.6, 125);
+            moveStrafeSpecial(0.6, 140);
         }
         sleep(500);
-        moveForwarddMaxTime(0.4,150, 1000);
-        fizzleIn(0.15,15);
+
     }
 
     public void strafeToRedColumnTurn() throws InterruptedException {
@@ -1686,8 +1684,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(-0.6,320);
         }
         sleep(500);
-        moveForwarddMaxTime(0.4,150, 1000);
-        fizzleIn(0.15,15);
+
     }
 
     public void strafeToBlueColumnTurn() throws InterruptedException {
@@ -1702,8 +1699,9 @@ public abstract class AutoOpMode extends LinearOpMode {
             moveStrafe(0.6,230);
         }
         sleep(500);
-        moveForwarddMaxTime(0.4,150, 1000);
-        fizzleIn(0.15,15);
+
+
+
     }
 
     public void fizzleIn(double velocity, double angle) throws InterruptedException {
@@ -1751,24 +1749,68 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
     }
 
+    public void executeEndActions() throws InterruptedException{
+        moveForwarddMaxTime(0.4,300,2500);
+        sleep(300);
+        moveBackward(0.5,55);
+        sleep(300);
+        fizzleIn(0.1,15);
+        sleep(300);
+        unclampGlyph();
+        sleep(3000);
+        moveBackward(0.4, 95);
+    }
+
+    public void executeEndActionsBlue() throws InterruptedException{
+        moveForwarddMaxTime(0.4,300,2500);
+        moveBackward(0.5,55);
+        sleep(300);
+        fizzleIn(0.1,15);
+        sleep(300);
+        unclampGlyph();
+        sleep(3000);
+        moveBackward(0.4, 50);
+    }
+
+
+
     public void unclampGlyph(){
-        leftGlyphClamp.setPosition(0.4);
-        rightGlyphClamp.setPosition(0.5);
+        leftGlyphClamp.setPosition(0.35);
+        rightGlyphClamp.setPosition(0.55);
     }
 
     public void clampGlyph(){
-        leftGlyphClamp.setPosition(0.1);
-        rightGlyphClamp.setPosition(0.8);
+        leftGlyphClamp.setPosition(0.0);
+        rightGlyphClamp.setPosition(0.9);
     }
 
     public void backUpFromGlyph() throws InterruptedException {
-        moveBackward(0.3,50);
+        moveBackward(0.4,150);
     }
 
     public void backUpFromColumn() throws InterruptedException{
         moveBackward(0.3,50);
     }
 
+    public double getRangeSensorReading() throws InterruptedException{
+        return rangeSensor.getDistance(DistanceUnit.CM);
+    }
+
+    public void strafeToColumnWithRangeSensor(double distance) throws InterruptedException{
+        double rsError;
+        double deltaTime;
+        double lastTime = System.currentTimeMillis();
+        double rsInteg = 0;
+        double p = 0.02;
+        double i = 0.0001;
+        while (getRangeSensorReading() < distance){
+            rsError = distance - getRangeSensorReading();
+            deltaTime = System.currentTimeMillis() - lastTime;
+            rsInteg += deltaTime * rsError;
+            moveStrafe(rsInteg * i + rsError * p);
+            lastTime = System.currentTimeMillis();
+        }
+    }
 
 
 

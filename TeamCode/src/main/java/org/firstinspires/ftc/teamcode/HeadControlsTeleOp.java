@@ -1,6 +1,8 @@
 
         package org.firstinspires.ftc.teamcode;
 
+        import android.graphics.Color;
+
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.CRServo;
@@ -86,7 +88,6 @@ public class HeadControlsTeleOp extends OpMode {
     long lastGlyphTime;
     private boolean firstRelicPos = true;
 
-
     private double relicMoveTime;
     private int relicPos;
 
@@ -119,6 +120,7 @@ public class HeadControlsTeleOp extends OpMode {
         FR = hardwareMap.dcMotor.get("FR");
         BR = hardwareMap.dcMotor.get("BR");
         BL = hardwareMap.dcMotor.get("BL");
+
         //leftArm             = hardwareMap.servo.get("LRelicArm");
         //rightArm            = hardwareMap.servo.get("RRelicArm");
         //leftRelic           = hardwareMap.servo.get("LRelic");
@@ -204,8 +206,10 @@ public class HeadControlsTeleOp extends OpMode {
         //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
         //manipLift();
         extendRelic();
-
+        reportTelemetry();
     }
+
+
 
     public double getRightVelocity() {
         if (Math.abs(gamepad1.right_stick_y) > 0.05)
@@ -265,17 +269,19 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
     public void toggleHalfSpeed() {
-        currentTime = System.currentTimeMillis();
-        if (gamepad1.x && (currentTime - lastTime) < DELAYTOGGLE) {
-            if (halfSpeed) {
-                halfSpeed = false;
-                telemetry.addData("halfspeed", "disabled");
-            } else if (!halfSpeed) {
-                halfSpeed = true;
-                telemetry.addData("halfspeed", "enabled");
-            }
-            lastTime = System.currentTimeMillis();
+        if (halfSpeed) {
+            halfSpeed = false;
+            telemetry.addData("halfspeed", "disabled");
+        } else if (!halfSpeed) {
+            halfSpeed = true;
+            telemetry.addData("halfspeed", "enabled");
         }
+    }
+
+    public void reportTelemetry(){
+        getRemainingTime();
+        getMotorEncoders();
+        telemetry.update();
     }
 
 
@@ -288,7 +294,8 @@ public class HeadControlsTeleOp extends OpMode {
     public double getHalfSpeed() {
         if (halfSpeed)
             return 0.5;
-        return 1;
+        return 1
+                ;
 
     }
 
@@ -302,7 +309,6 @@ public class HeadControlsTeleOp extends OpMode {
                     relic.setPosition(0);
                     relicClosed = false;
                 }
-                telemetry.update();
             }
             recentPressTime = System.currentTimeMillis();
         }
@@ -445,18 +451,23 @@ public class HeadControlsTeleOp extends OpMode {
         telemetry.addData("Time Remaining", secondsToMinutes());
     }
 
+    public void getMotorEncoders(){
+        telemetry.addData("FL Encoder", FL.getCurrentPosition());
+        telemetry.addData("FR Encoder", FR.getCurrentPosition());
+        telemetry.addData("BL Encoder", BL.getCurrentPosition());
+        telemetry.addData("BR Encoder", BR.getCurrentPosition());
+    }
+
     public String secondsToMinutes(){
         double seconds = 120 - timer.seconds();
-        if (seconds <= 1){
-            backupRelicDrop();
-        }
-        return seconds/60 + ":" + seconds%60;
+        return (int)(seconds/60) + ":" + (int)(seconds%60);
     }
 
     //Method to drop relic at the last second
     public void backupRelicDrop(){
         relic.setPosition(0);
     }
+
 
 
 
