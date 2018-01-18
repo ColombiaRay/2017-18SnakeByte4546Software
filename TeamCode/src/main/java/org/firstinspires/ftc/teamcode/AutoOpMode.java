@@ -1402,6 +1402,22 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public void outTunnel(int time) throws InterruptedException
+    {
+        pidTurnRight(90);
+        pidTurnRight(90);
+
+        frontLeftTunnel.setPower(-1);
+        backLeftTunnel.setPower(-1);
+        frontRightTunnel.setPower(1);
+        backRightTunnel.setPower(-1);
+        sleep(time);
+        frontLeftTunnel.setPower(0);
+        backLeftTunnel.setPower(0);
+        frontRightTunnel.setPower(0);
+        backRightTunnel.setPower(0);
+    }
+
     public void expelGlyphs(int time){
         double startTime = System.currentTimeMillis();
         while((System.currentTimeMillis() - startTime < time) && (opModeIsActive())){
