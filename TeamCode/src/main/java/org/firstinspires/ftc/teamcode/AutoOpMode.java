@@ -1829,10 +1829,10 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void releaseBlocks() {
-        frontLeftTunnel.setPower(-0.5);
-        backLeftTunnel.setPower(-0.5);
-        frontRightTunnel.setPower(0.5);
-        backRightTunnel.setPower(-0.5);
+        frontLeftTunnel.setPower(0.5);
+        backLeftTunnel.setPower(0.5);
+        frontRightTunnel.setPower(-0.5);
+        backRightTunnel.setPower(0.5);
     }
 
     public void shootGlyph(int time) throws InterruptedException {
