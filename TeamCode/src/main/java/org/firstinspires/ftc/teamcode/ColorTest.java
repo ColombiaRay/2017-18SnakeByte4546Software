@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 /**
  * Created by raymo on 10/25/17.
  */
-//@Autonomous
+@Autonomous
 public class ColorTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

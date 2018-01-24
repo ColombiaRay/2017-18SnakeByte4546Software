@@ -3,12 +3,16 @@
 
         import android.graphics.Color;
 
+        import com.qualcomm.hardware.bosch.BNO055IMU;
+        import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.CRServo;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.util.ElapsedTime;
+
+        import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
         /**
  * Created by raymo on 10/4/17.
@@ -21,6 +25,8 @@ public class HeadControlsTeleOp extends OpMode {
     private double leftMotion;
     private double leftRelicPosition;
     private double rightRelicPosition;
+    private double currentGyro;
+    private double prevGyro;
 
     private boolean halfSpeed;
 
@@ -29,6 +35,8 @@ public class HeadControlsTeleOp extends OpMode {
     private long currentTime;
     private long lastTime;
     private long closeTime;
+
+    private int revolutions;
 
     // Drive Train
     private DcMotor FL;
@@ -87,6 +95,7 @@ public class HeadControlsTeleOp extends OpMode {
     boolean clampOpen = true;
     long lastGlyphTime;
     private boolean firstRelicPos = true;
+    private BNO055IMU imu;
 
     private double relicMoveTime;
     private int relicPos;
@@ -180,6 +189,18 @@ public class HeadControlsTeleOp extends OpMode {
         BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+        prevGyro = 0;
+        currentGyro = 0;
     }
 
     //Activates when start, not init is pressed. Use it for setting servos to initial positions
@@ -197,6 +218,7 @@ public class HeadControlsTeleOp extends OpMode {
         setPower();
         toggleHalfSpeed();
         useJewel();
+        findTrueGyro();
         useRelicArm();
         raiseClamps();
         useGlyphClamps();
@@ -231,9 +253,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void useJewel() {
         if (gamepad1.dpad_left) {
-            jewelHitter.setPosition(0.55);
+            jewelHitter.setPosition(0.70);
         } else if (gamepad1.dpad_right) {
-            jewelHitter.setPosition(1);
+            jewelHitter.setPosition(0.25);
         }
     }
 
@@ -268,6 +290,11 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+    public double getGyroYaw(){
+        Orientation angles = imu.getAngularOrientation();
+        return (angles.firstAngle * -1);
+    }
+
     public void toggleHalfSpeed() {
         if (halfSpeed) {
             halfSpeed = false;
@@ -281,6 +308,7 @@ public class HeadControlsTeleOp extends OpMode {
     public void reportTelemetry(){
         getRemainingTime();
         getMotorEncoders();
+        telemetry.addData("Angle", revolutions * 360 + currentGyro + "");
         telemetry.update();
     }
 
@@ -384,10 +412,10 @@ public class HeadControlsTeleOp extends OpMode {
     public void raiseClamps() {
         if (gamepad2.y) {
             rightCLift.setPower(0.7);
-            leftCLift.setPower(-0.3);
+            leftCLift.setPower(-0.7);
         } else if (gamepad2.a) {
             rightCLift.setPower(-0.7);
-            leftCLift.setPower(0.3);
+            leftCLift.setPower(0.7);
         } else {
             rightCLift.setPower(0);
             leftCLift.setPower(0);
@@ -425,8 +453,8 @@ public class HeadControlsTeleOp extends OpMode {
     public void useGlyphClamps() {
         if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
             if (clampOpen) {
-                leftGlyphClamp.setPosition(0.07);
-                rightGlyphClamp.setPosition(0.83);
+                leftGlyphClamp.setPosition(0.12);
+                rightGlyphClamp.setPosition(0.78);
                 clampOpen = false;
             } else if (!clampOpen) {
                 leftGlyphClamp.setPosition(0.35);
@@ -468,7 +496,16 @@ public class HeadControlsTeleOp extends OpMode {
         relic.setPosition(0);
     }
 
-
+    public void findTrueGyro(){
+        prevGyro = currentGyro;
+        currentGyro = getGyroYaw();
+        if ((prevGyro < 0) && (currentGyro > 0)){
+            revolutions ++;
+        }
+        else if ((prevGyro > 0) && (currentGyro < 0)){
+            revolutions--;
+        }
+    }
 
 
     /* Methods for original clamp bot (obsolete)

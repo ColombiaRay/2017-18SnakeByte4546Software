@@ -18,7 +18,7 @@ public class LM3RedAutoRight extends AutoOpMode {
         knockJewel();
         sleep(500);
         strafeToRedColumnStrafe();
-        executeEndActions();
-
+        turn180();
+        shootAndStrafe();
     }
 }

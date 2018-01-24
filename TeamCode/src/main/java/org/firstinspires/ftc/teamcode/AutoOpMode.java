@@ -20,7 +20,9 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
@@ -106,7 +108,10 @@ public abstract class AutoOpMode extends LinearOpMode {
     Servo relicArm;
     MattTunnel tunnel;
     private boolean scored;
-    ModernRoboticsI2cRangeSensor rangeSensor;
+
+    ModernRoboticsI2cRangeSensor rangeSensorRight;
+    ModernRoboticsI2cRangeSensor rangeSensorLeft;
+
     ElapsedTime timer;
     //private Servo gateServo;
 
@@ -148,7 +153,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         backLeftTunnel      = hardwareMap.crservo.get("BLT");
         inTake              = hardwareMap.dcMotor.get("intake");
         relicArm            = hardwareMap.servo.get("relicArm");
-        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "sensor_range");
+        rangeSensorRight = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
+        rangeSensorLeft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
         tunnel              = new MattTunnel(liftLeft,liftRight, inTake, frontRightTunnel, backRightTunnel, frontLeftTunnel, backLeftTunnel);
         leftGlyphClamp = hardwareMap.servo.get("leftGlyphClamp");
         rightGlyphClamp = hardwareMap.servo.get("rightGlyphClamp");
@@ -178,6 +184,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         jewelDistance = hardwareMap.get(DistanceSensor.class, "color");
         reportInitialized();
         previousAngle = 0;
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 10);
 
         ElapsedTime timer = new ElapsedTime();
     }
@@ -185,6 +192,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void resetTime(){
         timer.reset();
     }
+
 
     public void initializeGyro(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -197,6 +205,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
     }
+
 
     public void setPower(double velocity, double rotation, double strafe) throws InterruptedException {
         FL.setPower(velocity - rotation + strafe);
@@ -211,6 +220,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         BL.setPower(0);
         BR.setPower(0);
     }
+
 
     public void reportInitialized() throws InterruptedException{
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
@@ -268,6 +278,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Yaw", getGyroYaw());
         telemetry.addData("Roll", getGyroRoll());
         telemetry.addData("Pitch", getGyroPitch());
+        telemetry.addData("Position", imu.getPosition());
         telemetry.update();
     }
 
@@ -299,8 +310,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void lowerJewel() throws InterruptedException {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
-        while ((jewelHitter.getPosition() > 0.60) && (opModeIsActive())){
-            jewelHitter.setPosition(jewelHitter.getPosition() - 0.01);
+        while ((jewelHitter.getPosition() < 0.70) && (opModeIsActive())){
+            jewelHitter.setPosition(jewelHitter.getPosition() + 0.01);
             sleep(25);
             idle();
         }
@@ -308,9 +319,9 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void raiseJewel() throws InterruptedException {
         telemetry.addData("Raising", "jewel");
-        while ((jewelHitter.getPosition() < 1) && (opModeIsActive())){
-            jewelHitter.setPosition(jewelHitter.getPosition() + 0.04);
-            sleep(50);
+        while ((jewelHitter.getPosition() > 0.25) && (opModeIsActive())){
+            jewelHitter.setPosition(jewelHitter.getPosition() - 0.05);
+            sleep(70);
             idle();
 
         }
@@ -569,6 +580,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
         scanImage();
+
         if (place.equals("left")) {
             moveForward(.2, 1000);
         }
@@ -630,6 +642,34 @@ public abstract class AutoOpMode extends LinearOpMode {
         setStartAngle();
         while ((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive())) {
             setPower(0, getStrafeCorrection(startAngle),strafe);
+            telemetry.addData("distance", getStrafeEncoders() - startStrafe);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+    }
+
+    //2 Strafing methods, but they will stop either when it reaches a certain encoder position, or a certain time has elapsed
+    //Helps motor health
+    public void moveStrafeRightMaxTime(double strafe, int distance, double maxTimeMS) throws InterruptedException{
+        double startStrafe = getStrafeEncoders();
+        setStartAngle();
+        double startTime = System.currentTimeMillis();
+        while ((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive()) && (System.currentTimeMillis() - startTime < maxTimeMS)) {
+            setPower(0, getStrafeCorrection(startAngle),strafe);
+            telemetry.addData("distance", getStrafeEncoders() - startStrafe);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+    }
+
+    public void moveStrafeLeftMaxTime(double strafe, int distance, double maxTimeMS) throws InterruptedException{
+        double startStrafe = getStrafeEncoders();
+        setStartAngle();
+        double startTime = System.currentTimeMillis();
+        while ((Math.abs(getStrafeEncoders() - startStrafe) < distance) && (opModeIsActive()) && (System.currentTimeMillis() - startTime < maxTimeMS)) {
+            setPower(0, getStrafeCorrection(startAngle),-strafe);
             telemetry.addData("distance", getStrafeEncoders() - startStrafe);
             telemetry.update();
             idle();
@@ -1395,10 +1435,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         sleep(500);
         double startTime = System.currentTimeMillis();
         while(System.currentTimeMillis() - startTime < time) {
-            frontLeftTunnel.setPower(0.5);
-            backLeftTunnel.setPower(0.5);
-            frontRightTunnel.setPower(-0.5);
-            backRightTunnel.setPower(0.5);
+            frontLeftTunnel.setPower(1);
+            backLeftTunnel.setPower(1);
+            frontRightTunnel.setPower(-1);
+            backRightTunnel.setPower(1);
         }
     }
 
@@ -1808,19 +1848,33 @@ public abstract class AutoOpMode extends LinearOpMode {
         moveBackward(0.3,50);
     }
 
-    public double getRangeSensorReading() throws InterruptedException{
-        return rangeSensor.getDistance(DistanceUnit.CM);
+    public double getRangeSensorRightReading() throws InterruptedException{
+        double reading = rangeSensorRight.getDistance(DistanceUnit.CM);
+        while (reading > 500 || Double.isNaN(reading) && opModeIsActive()){
+            reading = rangeSensorRight.getDistance(DistanceUnit.CM);
+        }
+        telemetry.addData("Reading", reading);
+        return reading;
     }
 
-    public void strafeToColumnWithRangeSensor(double distance) throws InterruptedException{
+    public double getRangeSensorLeftReading() throws InterruptedException{
+        double reading = rangeSensorLeft.getDistance(DistanceUnit.CM);
+        while (reading > 500 || Double.isNaN(reading) && opModeIsActive()){
+            reading = rangeSensorLeft.getDistance(DistanceUnit.CM);
+        }
+        telemetry.addData("Reading", reading);
+        return reading;
+    }
+
+    public void strafeToColumnPIDWithRangeSensor(double distance) throws InterruptedException{
         double rsError;
         double deltaTime;
         double lastTime = System.currentTimeMillis();
         double rsInteg = 0;
         double p = 0.02;
         double i = 0.0001;
-        while (getRangeSensorReading() < distance){
-            rsError = distance - getRangeSensorReading();
+        while (getRangeSensorRightReading() < distance){
+            rsError = distance - getRangeSensorRightReading();
             deltaTime = System.currentTimeMillis() - lastTime;
             rsInteg += deltaTime * rsError;
             moveStrafe(rsInteg * i + rsError * p);
@@ -1828,11 +1882,45 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public void strafeToColumnWithRange(double distance, double power) throws InterruptedException {
+        while (getRangeSensorRightReading() < distance){
+            moveStrafe(-power);
+            telemetry.addData("moving","moving");
+            telemetry.update();
+        }
+        setZero();
+    }
+
+    public void strafeToColumnPWithRange(double distance) throws InterruptedException{
+        while (getRangeSensorRightReading() < distance){
+            moveStrafe(-(0.3 + (distance - getRangeSensorRightReading())/distance));
+        }
+        setZero();
+    }
+
+    public void strafeToColumnPAltWithRange(double distance) throws InterruptedException{
+        while (getRangeSensorRightReading() < distance){
+            moveStrafe((0.3 + (distance - getRangeSensorRightReading())/distance));
+        }
+        setZero();
+    }
+
+    //Method to push the glyph in, seems kinda sucky so probably wont be used, since
+    //we feel like it has a high risk of getting the glyph stuck in or touching the clamps
+    public void hitIn() throws InterruptedException{
+        unclampGlyph();
+        sleep(300);
+        moveBackward(0.5,75);
+        clampGlyph();
+        moveForwarddMaxTime(0.5,250,2000);
+        sleep(300);
+        moveBackward(0.5,75);
+    }
     public void releaseBlocks() {
-        frontLeftTunnel.setPower(-0.5);
-        backLeftTunnel.setPower(-0.5);
-        frontRightTunnel.setPower(0.5);
-        backRightTunnel.setPower(-0.5);
+        frontLeftTunnel.setPower(0.5);
+        backLeftTunnel.setPower(0.5);
+        frontRightTunnel.setPower(-0.5);
+        backRightTunnel.setPower(0.5);
     }
 
     public void shootGlyph(int time) throws InterruptedException {
@@ -1851,6 +1939,61 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
+    //Drops the block, backs up, and strafes into the column
+    public void shootAndStrafe() throws InterruptedException{
+        shootGlyph(2000);
+        sleep(500);
+        moveForward(0.5,40);
+        pidTurnLeft(90);
+        sleep(300);
+        moveStrafeLeftMaxTime(1,100,500);
+        sleep(300);
+        moveStrafeRightMaxTime(0.6, 100, 1000);
+    }
+
+    public void turn180() throws InterruptedException{
+        pidTurnRight(90);
+        pidTurnRight(90);
+    }
+
+
+    public void turnl180() throws InterruptedException{
+        pidTurnLeft(90);
+        pidTurnLeft(90);
+    }
+
+    public void dropAndStrafeV2() throws InterruptedException{
+        shootGlyph(3000);
+        sleep(500);
+        moveBackward(0.5,110);
+        pidTurnRight(90);
+        sleep(300);
+        moveStrafeRightMaxTime(1,400,500);
+        sleep(300);
+        moveStrafeLeftMaxTime(0.6, 125, 1000);
+    }
+
+    //Like the previous one but it turns left
+    public void dropAndStrafeAlternate() throws InterruptedException{
+        shootGlyph(3000);
+        sleep(300);
+        moveBackward(0.5,75);
+        pidTurnLeft(90);
+        sleep(300);
+        moveStrafeRightMaxTime(0.6,600,2000);
+        sleep(300);
+        moveStrafeLeftMaxTime(0.6, 250, 1500);
+    }
+
+    //Extremely wild and unlikely to work
+    public void golfIn() throws InterruptedException{
+        moveStrafeLeftMaxTime(0.4,300,2000);
+        sleep(300);
+        jewelHitter.setPosition(0.72);
+        sleep(400);
+        pidTurnLeft(45);
+        raiseJewel();
+    }
 
 
 //Gate on tunnel
