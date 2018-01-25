@@ -1968,12 +1968,12 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Drops the block, backs up, and strafes into the column
     public void shootAndStrafe() throws InterruptedException{
-        moveBackward(0.5);
+        moveBackward(0.4);
         sleep(500);
         setZero();
         shootGlyph(2000);
         sleep(500);
-        spitItOut(2000, 0.4);
+        spitItOut(500, 0.4);
 //        moveForward(0.5,150);
 //        pidTurnLeft(90);
 //        sleep(300);
@@ -1985,6 +1985,13 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void turn180() throws InterruptedException{
         pidTurnRight(90);
         pidTurnRight(90);
+    }
+
+    public void scoreGlyph() throws InterruptedException{
+        turn180();
+        sleep(300);
+        strafeToColumnPAltWithRange(65);
+        shootAndStrafe();
     }
 
 

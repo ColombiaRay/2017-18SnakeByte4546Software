@@ -13,12 +13,11 @@ public class LM3RedAutoRight extends AutoOpMode {
         setAlliance('r');
         initialize();
         waitForStart();
-        scanImage();
-        lowerJewel();
-        knockJewel();
+       // scanImage();
+       // lowerJewel();
+        //knockJewel();
         sleep(500);
-        strafeToRedColumnStrafe();
-        turn180();
-        shootAndStrafe();
+        moveForwardPID(690,0.0013, 0.0000007, 0.5);
+        scoreGlyph();
     }
 }
