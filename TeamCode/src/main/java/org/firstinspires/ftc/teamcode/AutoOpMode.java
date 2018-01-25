@@ -1899,11 +1899,13 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void strafeToColumnPAltWithRange(double distance) throws InterruptedException{
-        while (getRangeSensorRightReading() < distance){
-            moveStrafe((0.3 + (distance - getRangeSensorRightReading())/distance));
+        while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive())){
+            setPower(0,getStrafeCorrectionSpec(180),(0.35 + (distance - getRangeSensorLeftReading())/distance));
         }
         setZero();
+
     }
+
 
     //Method to push the glyph in, seems kinda sucky so probably wont be used, since
     //we feel like it has a high risk of getting the glyph stuck in or touching the clamps
@@ -1939,14 +1941,26 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     }
 
+    public void moveBackwardMaxTime(double power, double distance, double mTime) throws InterruptedException{
+        double startPos = getAvgEncoder();
+        double timing = System.currentTimeMillis();
+        while ((getAvgEncoder() - startPos < distance) && (opModeIsActive()) && (System.currentTimeMillis() - timing < mTime)){
+            moveBackward(power);
+        }
+        setZero();
+    }
+
     //Drops the block, backs up, and strafes into the column
     public void shootAndStrafe() throws InterruptedException{
+        moveBackward(0.5);
+        sleep(500);
+        setZero();
         shootGlyph(2000);
         sleep(500);
-        moveForward(0.5,40);
+        moveForward(0.5,150);
         pidTurnLeft(90);
         sleep(300);
-        moveStrafeLeftMaxTime(1,100,500);
+        moveStrafeLeftMaxTime(1,100,100);
         sleep(300);
         moveStrafeRightMaxTime(0.6, 100, 1000);
     }

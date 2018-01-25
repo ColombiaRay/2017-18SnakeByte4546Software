@@ -12,5 +12,10 @@ public class AutoEndMovementsTest extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
+        turn180();
+        sleep(300);
+        strafeToColumnPAltWithRange(82);
+        shootAndStrafe();
+
     }
 }
