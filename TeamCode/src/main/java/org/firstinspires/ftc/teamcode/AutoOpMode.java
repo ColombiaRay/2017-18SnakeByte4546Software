@@ -1458,6 +1458,22 @@ public abstract class AutoOpMode extends LinearOpMode {
         backRightTunnel.setPower(0);
     }
 
+    public void spitItOut(int time, double power) throws InterruptedException
+    {
+        frontLeftTunnel.setPower(0.5);
+        backLeftTunnel.setPower(0.5);
+        frontRightTunnel.setPower(-0.5);
+        backRightTunnel.setPower(0.5);
+        setPower(power, 0, 0);
+        sleep(time);
+        frontLeftTunnel.setPower(0);
+        backLeftTunnel.setPower(0);
+        frontRightTunnel.setPower(0);
+        backRightTunnel.setPower(0);
+        setPower(0, 0 ,0);
+
+    }
+
     public void expelGlyphs(int time){
         double startTime = System.currentTimeMillis();
         while((System.currentTimeMillis() - startTime < time) && (opModeIsActive())){
@@ -1957,12 +1973,13 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
         shootGlyph(2000);
         sleep(500);
-        moveForward(0.5,150);
-        pidTurnLeft(90);
-        sleep(300);
-        moveStrafeLeftMaxTime(1,100,100);
-        sleep(300);
-        moveStrafeRightMaxTime(0.6, 100, 1000);
+        spitItOut(2000, 0.4);
+//        moveForward(0.5,150);
+//        pidTurnLeft(90);
+//        sleep(300);
+//        moveStrafeLeftMaxTime(1,100,100);
+//        sleep(300);
+//        moveStrafeRightMaxTime(0.6, 100, 1000);
     }
 
     public void turn180() throws InterruptedException{
