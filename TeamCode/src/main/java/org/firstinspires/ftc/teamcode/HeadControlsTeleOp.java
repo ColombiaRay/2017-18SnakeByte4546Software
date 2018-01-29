@@ -253,9 +253,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void useJewel() {
         if (gamepad1.dpad_left) {
-            jewelHitter.setPosition(0.70);
+            jewelHitter.setPosition(0.9);
         } else if (gamepad1.dpad_right) {
-            jewelHitter.setPosition(0.25);
+            jewelHitter.setPosition(0.45);
         }
     }
 
@@ -453,12 +453,12 @@ public class HeadControlsTeleOp extends OpMode {
     public void useGlyphClamps() {
         if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
             if (clampOpen) {
-                leftGlyphClamp.setPosition(0.12);
-                rightGlyphClamp.setPosition(0.78);
+                leftGlyphClamp.setPosition(0.93);
+                rightGlyphClamp.setPosition(0.15);
                 clampOpen = false;
             } else if (!clampOpen) {
-                leftGlyphClamp.setPosition(0.35);
-                rightGlyphClamp.setPosition(0.55);
+                leftGlyphClamp.setPosition(0.68);
+                rightGlyphClamp.setPosition(0.40);
                 clampOpen = true;
             }
             lastGlyphTime = System.currentTimeMillis();

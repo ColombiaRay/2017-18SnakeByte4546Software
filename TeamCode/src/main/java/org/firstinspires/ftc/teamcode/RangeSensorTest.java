@@ -15,7 +15,11 @@ public class RangeSensorTest extends AutoOpMode {
         //strafeToColumnPWithRange(50);
         //strafeToColumnWithRange(48,0.4);
         //strafeToColumnWithRange(65,0.4);
-        strafeToColumnPWithRange(82);
+        while(opModeIsActive()){
+            telemetry.addData("left", getRangeSensorLeftReading());
+            telemetry.addData("right", getRangeSensorRightReading());
+            telemetry.update();
+        }
         //shootAndStrafe();
     }
 }

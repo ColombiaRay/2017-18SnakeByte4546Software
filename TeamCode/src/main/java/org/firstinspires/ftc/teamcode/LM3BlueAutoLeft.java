@@ -15,10 +15,14 @@ public class LM3BlueAutoLeft extends AutoOpMode {
         initialize();
         waitForStart();
         scanImage();
+        // scanImage();
         lowerJewel();
         knockJewel();
-        sleep(500);
-        strafeToBlueColumnStrafe();
-        executeEndActions();
+        //moveBackwardPID(500,0.0013, 0.0000007, 0.5);
+        moveBackward(0.35);
+        sleep(735);
+        setZero();
+        sleep(200);
+        scoreGlyphB();
     }
 }

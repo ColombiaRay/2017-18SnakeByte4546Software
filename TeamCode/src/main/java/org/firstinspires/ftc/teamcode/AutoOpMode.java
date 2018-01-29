@@ -185,7 +185,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         reportInitialized();
         previousAngle = 0;
         imu.startAccelerationIntegration(new Position(), new Velocity(), 10);
-
+        relicArm.setPosition(1);
         ElapsedTime timer = new ElapsedTime();
     }
 
@@ -310,7 +310,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void lowerJewel() throws InterruptedException {
         jewelKnocker.setPosition(0.55);
         sleep(1000);
-        while ((jewelHitter.getPosition() < 0.70) && (opModeIsActive())){
+        jewelHitter.setPosition(0.45);
+        while ((jewelHitter.getPosition() < 0.9) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() + 0.01);
             sleep(25);
             idle();
@@ -319,7 +320,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void raiseJewel() throws InterruptedException {
         telemetry.addData("Raising", "jewel");
-        while ((jewelHitter.getPosition() > 0.25) && (opModeIsActive())){
+        while ((jewelHitter.getPosition() > 0.45) && (opModeIsActive())){
             jewelHitter.setPosition(jewelHitter.getPosition() - 0.05);
             sleep(70);
             idle();
@@ -1601,7 +1602,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             findAngDisplacement();
             findAngError(angle);
             telemetry.update();
-            turn(-(kP * angError + 0.23));
+            turn(-(kP * angError + 0.18));
         }
         setZero();
     }
@@ -1909,14 +1910,21 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void strafeToColumnPWithRange(double distance) throws InterruptedException{
         while (getRangeSensorRightReading() < distance){
-            moveStrafe(-(0.3 + (distance - getRangeSensorRightReading())/distance));
+            setPower(0,getStrafeCorrection(0),-(0.30 + (distance - getRangeSensorRightReading())/distance));
         }
         setZero();
+        if (getRangeSensorRightReading() > distance + 6){
+            telemetry.addData("correction", "active");
+            telemetry.update();
+            while (getRangeSensorRightReading() > distance){
+                setPower(0,getStrafeCorrection(0),(0.30 + (distance - getRangeSensorRightReading())/distance));
+            }
+        }
     }
 
     public void strafeToColumnPAltWithRange(double distance) throws InterruptedException{
         while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive())){
-            setPower(0,getStrafeCorrectionSpec(180),(0.35 + (distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
         }
         setZero();
 
@@ -1968,12 +1976,12 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     //Drops the block, backs up, and strafes into the column
     public void shootAndStrafe() throws InterruptedException{
-        moveBackward(0.4);
-        sleep(500);
+        moveBackward(0.2);
+        sleep(700);
         setZero();
         shootGlyph(2000);
-        sleep(500);
-        spitItOut(500, 0.4);
+        sleep(125);
+        spitItOut(200, 0.4);
 //        moveForward(0.5,150);
 //        pidTurnLeft(90);
 //        sleep(300);
@@ -1983,15 +1991,49 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     public void turn180() throws InterruptedException{
-        pidTurnRight(90);
+        pidTurnRight(90 - Math.abs(getGyroYaw()));
         pidTurnRight(90);
     }
 
     public void scoreGlyph() throws InterruptedException{
-        turn180();
         sleep(300);
-        strafeToColumnPAltWithRange(65);
+        //strafeToColumnPAltWithRange(61);
+        //strafeToColumnPAltWithRange(45);
+        moveToRightRedColumn();
         shootAndStrafe();
+    }
+
+    public void scoreGlyphB() throws InterruptedException{
+        sleep(300);
+        //strafeToColumnPAltWithRange(61);
+        //strafeToColumnPAltWithRange(45);
+        moveToRightBlueColumn();
+        shootAndStrafe();
+    }
+
+    public void moveToRightRedColumn() throws InterruptedException {
+        if (cryptoboxKey.equals("left")){
+            strafeToColumnPAltWithRange(82);
+        }
+        else if (cryptoboxKey.equals("center")){
+            strafeToColumnPAltWithRange(64);
+        }
+        else{
+            strafeToColumnPAltWithRange(45);
+        }
+    }
+
+    public void moveToRightBlueColumn() throws InterruptedException {
+        if (cryptoboxKey.equals("left")){
+            strafeToColumnPWithRange(45);
+        }
+        else if (cryptoboxKey.equals("center")){
+            strafeToColumnPWithRange(63);
+        }
+        else{
+            strafeToColumnPWithRange(80);
+        }
+
     }
 
 

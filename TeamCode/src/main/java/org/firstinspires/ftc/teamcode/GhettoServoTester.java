@@ -13,11 +13,12 @@ public class GhettoServoTester extends AutoOpMode {
         initialize();
         waitForStart();
         //jewelHitter.setPosition(0.25);
-        jewelHitter.setPosition(0.70);
+        leftGlyphClamp.setPosition(0);
         sleep(5000);
         for (double i = 0; i <= 1; i += 0.1){
-            jewelHitter.setPosition(i);
-            telemetry.addData("p", i);
+            //Right clamp closed - 0.2, open - 0.5 left clamp - 0.7 open, 1 closed
+            leftGlyphClamp.setPosition(i);
+            telemetry.addData("Pos", i);
             telemetry.update();
             sleep(500);
         }
