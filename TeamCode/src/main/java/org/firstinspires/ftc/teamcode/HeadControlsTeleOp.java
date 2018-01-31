@@ -1,7 +1,7 @@
 
-        package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
-        import android.graphics.Color;
+import android.graphics.Color;
 
         import com.qualcomm.hardware.bosch.BNO055IMU;
         import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -96,7 +96,8 @@ public class HeadControlsTeleOp extends OpMode {
     long lastGlyphTime;
     private boolean firstRelicPos = true;
     private BNO055IMU imu;
-
+    private double powerfactor = 1;
+    private double recentRPressTime;
     private double relicMoveTime;
     private int relicPos;
 
@@ -221,7 +222,7 @@ public class HeadControlsTeleOp extends OpMode {
         findTrueGyro();
         useRelicArm();
         raiseClamps();
-        useGlyphClamps();
+        enableRelicHalfSpeed();
         tunnel.toggleIntakeTank(gamepad2.left_stick_y, gamepad2.right_stick_y);
         //tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
         //alterRelicMotion();
@@ -229,6 +230,7 @@ public class HeadControlsTeleOp extends OpMode {
         //manipLift();
         extendRelic();
         reportTelemetry();
+        useGlyphClamps();
     }
 
 
@@ -309,6 +311,11 @@ public class HeadControlsTeleOp extends OpMode {
         getRemainingTime();
         getMotorEncoders();
         telemetry.addData("Angle", revolutions * 360 + currentGyro + "");
+        if (powerfactor == 1) {
+            telemetry.addData("Relic Half Speed", "Off");
+        } else if (powerfactor == 0.5){
+            telemetry.addData("Relic Half Speed", "On");
+        }
         telemetry.update();
     }
 
@@ -422,6 +429,19 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+    public void enableRelicHalfSpeed(){
+        if (System.currentTimeMillis() - recentRPressTime > 150) {
+            if (gamepad2.dpad_left) {
+                if (powerfactor == 1) {
+                    powerfactor = 0.5;
+                } else if (powerfactor == 0.5){
+                    powerfactor = 1;
+                }
+            }
+            recentRPressTime = System.currentTimeMillis();
+        }
+    }
+
 
     public void setPower() {
         FL.setPower(getLeftVelocity() - getLeftShoulder() + getRightShoulder());
@@ -432,23 +452,23 @@ public class HeadControlsTeleOp extends OpMode {
 
 
     //Has some potential for balancing
-    public void brake() {
-        if (gamepad2.left_bumper) {
-            if (!braked) {
-                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                braked = true;
-            } else {
-                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                braked = false;
-            }
-        }
-    }
+//    public void brake() {
+//        if (gamepad2.left_bumper) {
+//            if (!braked) {
+//                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                braked = true;
+//            } else {
+//                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                braked = false;
+//            }
+//        }
+//    }
 
     public void useGlyphClamps() {
         if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
@@ -467,9 +487,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void extendRelic() {
         if (gamepad2.dpad_up) {
-            relicMotor.setPower(1);
+            relicMotor.setPower(powerfactor*1);
         } else if (gamepad2.dpad_down) {
-            relicMotor.setPower(-1);
+            relicMotor.setPower(-powerfactor*1);
         } else {
             relicMotor.setPower(0);
         }
