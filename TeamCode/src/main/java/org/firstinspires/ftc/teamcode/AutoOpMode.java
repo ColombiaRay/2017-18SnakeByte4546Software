@@ -1706,6 +1706,15 @@ public abstract class AutoOpMode extends LinearOpMode {
                 blue += blueData;
             }
         }
+        if (red > blue + 3) {
+            return "red";
+        } else if (red + 3 < blue) {
+            return "blue";
+        } else if (colorRec < 2) {
+            colorRec++;
+            colorCompare();
+        }
+        return "unknown";
     }
 
 //Range Sensor (on jewel hitter)
