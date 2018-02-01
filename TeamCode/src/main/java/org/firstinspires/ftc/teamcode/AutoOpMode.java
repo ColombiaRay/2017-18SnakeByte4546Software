@@ -1690,6 +1690,24 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
 
+    public String colorCompare() throws InterruptedException {
+        double red = 0;
+        double blue = 0;
+        double redData = 0;
+        double blueData = 0;
+        sleep(500);
+        for (int i = 0; i < 30; i++) {
+            sleep(100);
+            if (i < 8) {
+                redData = (double) (colorFront.red()) / 8;
+                red += redData;
+            } else if (i >= 22) {
+                blueData = (double) (colorFront.blue()) / 8;
+                blue += blueData;
+            }
+        }
+    }
+
 //Range Sensor (on jewel hitter)
 
     public double getJewelRange() {
