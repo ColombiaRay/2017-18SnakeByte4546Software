@@ -1982,8 +1982,6 @@ public abstract class AutoOpMode extends LinearOpMode {
             telemetry.addData("Encoder",getAvgEncoder());
             setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
         }
-        int finen = getAvgEncoder();
-        telemetry.addData("blah blah", finen - startenc);
         setZero();
         sleep(500);
         if (getRangeSensorRightReading() > distance){
@@ -2022,6 +2020,39 @@ public abstract class AutoOpMode extends LinearOpMode {
             telemetry.update();
             while (getRangeSensorLeftReading() > distance){
                 setPower(0,getStrafeCorrection(180),(-(0.30 + (distance - getRangeSensorLeftReading())/distance)));
+            }
+        }
+    }
+
+    public void strafeToColumnPAltWithRangeEncoder(double distance) throws InterruptedException{
+        int startEnc = getAvgEncoder();
+        int overshootEnc = 1800;
+        while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive()) && (getAvgEncoder() - startEnc < overshootEnc)){
+            setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+        }
+        setZero();
+        if (getRangeSensorLeftReading() > distance + 6){
+            telemetry.addData("correction", "active");
+            telemetry.update();
+            while (getRangeSensorLeftReading() > distance){
+                setPower(0,getStrafeCorrection(180),(-(0.30 + (distance - getRangeSensorLeftReading())/distance)));
+            }
+        }
+    }
+
+    public void strafeToColumnPWithRangeSpecialEncoder(double distance) throws InterruptedException{
+        int startEnc = getAvgEncoder();
+        int overshootEnc = 1800;
+        while ((getRangeSensorRightReading() < distance) && (opModeIsActive()) && (getAvgEncoder() - startEnc < overshootEnc)){
+            telemetry.addData("Encoder",getAvgEncoder());
+            setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
+        }
+        setZero();
+        sleep(500);
+        if (getRangeSensorRightReading() > distance){
+            while (getRangeSensorRightReading() > distance){
+                telemetry.addData("correction", "active");
+                setPower(0,getStrafeCorrection(0),(0.4));
             }
         }
     }
