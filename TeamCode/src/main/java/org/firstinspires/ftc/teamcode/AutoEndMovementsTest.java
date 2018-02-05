@@ -6,16 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 1/12/2018.
  */
 
-@Autonomous
+//@Autonomous
 public class AutoEndMovementsTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
-        turn180();
-        sleep(300);
-        strafeToColumnPAltWithRange(82);
-        shootAndStrafe();
-
+        straighten();
     }
 }

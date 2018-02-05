@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
  * Created by raymo on 11/18/2017.
  */
 
-@Autonomous
+//@Autonomous
 public class GyroTest extends AutoOpMode{
     @Override
     public void runOpMode() throws InterruptedException {
