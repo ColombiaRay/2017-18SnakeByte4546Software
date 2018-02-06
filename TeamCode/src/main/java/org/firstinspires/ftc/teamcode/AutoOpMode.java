@@ -1437,7 +1437,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void loadTunnel(int time){
         sleep(500);
         double startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() - startTime < time) {
+        while(System.currentTimeMillis() - startTime < time && opModeIsActive()) {
             frontLeftTunnel.setPower(1);
             backLeftTunnel.setPower(1);
             frontRightTunnel.setPower(-1);
@@ -1836,7 +1836,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void simpleFizzleIn() throws InterruptedException{
         double start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 3){
+        while (System.currentTimeMillis() - start < 3 && opModeIsActive()){
             if((int)(2*(System.currentTimeMillis() - start))%2 == 0){
                 turn(0.5);
             }
@@ -1940,7 +1940,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         double rsInteg = 0;
         double p = 0.02;
         double i = 0.0001;
-        while (getRangeSensorRightReading() < distance){
+        while (getRangeSensorRightReading() < distance && opModeIsActive()){
             rsError = distance - getRangeSensorRightReading();
             deltaTime = System.currentTimeMillis() - lastTime;
             rsInteg += deltaTime * rsError;
@@ -1960,7 +1960,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void strafeToColumnPWithRange(double distance) throws InterruptedException{
         int startenc = getAvgEncoder();
-        while (getRangeSensorRightReading() < distance){
+        while (getRangeSensorRightReading() < distance && opModeIsActive()){
             telemetry.addData("Encoder",getAvgEncoder());
             setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
         }
@@ -1969,7 +1969,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         setZero();
         sleep(500);
         if (getRangeSensorRightReading() > distance){
-            while (getRangeSensorRightReading() > distance){
+            while (getRangeSensorRightReading() > distance && opModeIsActive()){
                 telemetry.addData("correction", "active");
                 setPower(0,getStrafeCorrection(0),(0.4));
             }
@@ -2018,7 +2018,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         if (getRangeSensorLeftReading() > distance + 6){
             telemetry.addData("correction", "active");
             telemetry.update();
-            while (getRangeSensorLeftReading() > distance){
+            while (getRangeSensorLeftReading() > distance && opModeIsActive()){
                 setPower(0,getStrafeCorrection(180),(-(0.30 + (distance - getRangeSensorLeftReading())/distance)));
             }
         }
