@@ -38,6 +38,8 @@ public class HeadControlsTeleOp extends OpMode {
 
     private int revolutions;
 
+    private int halfSpeedTime;
+
     // Drive Train
     private DcMotor FL;
     private DcMotor FR;
@@ -286,12 +288,17 @@ public class HeadControlsTeleOp extends OpMode {
     }
 
     public void toggleHalfSpeed() {
-        if (halfSpeed) {
-            halfSpeed = false;
-            telemetry.addData("halfspeed", "disabled");
-        } else if (!halfSpeed) {
-            halfSpeed = true;
-            telemetry.addData("halfspeed", "enabled");
+        if(System.currentTimeMillis() - halfSpeedTime > DELAY_TIME_MS) {
+
+            if (gamepad1.x && halfSpeed) {
+                halfSpeed = false;
+                telemetry.addData("halfspeed", "disabled");
+                halfSpeedTime = (int)System.currentTimeMillis();
+            } else if (gamepad1.x && !halfSpeed) {
+                halfSpeed = true;
+                telemetry.addData("halfspeed", "enabled");
+                halfSpeedTime = (int)System.currentTimeMillis();
+            }
         }
     }
 

@@ -20,7 +20,8 @@ public class LM3BlueAutoLeft extends AutoOpMode {
         knockJewel();
         //moveBackwardPID(500,0.0013, 0.0000007, 0.5);
         moveBackward(0.35);
-        sleep(735);
+        sleep(650);
+       // sleep(735);
         setZero();
         sleep(200);
         scoreGlyphB();

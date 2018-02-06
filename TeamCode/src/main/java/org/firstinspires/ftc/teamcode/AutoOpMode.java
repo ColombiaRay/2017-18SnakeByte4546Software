@@ -260,7 +260,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         return (angles.thirdAngle * -1);
     }
 
-
     //firstAngle
     public double getGyroYaw() throws InterruptedException {
         Orientation angles = imu.getAngularOrientation();
@@ -2144,6 +2143,12 @@ public abstract class AutoOpMode extends LinearOpMode {
         shootAndStrafe();
     }
 
+    public void scoreGlyphBRight () throws InterruptedException{
+        sleep(300);
+        // make new moveToRightBlueColumn with vals to get there for blue right
+        shootAndStrafe();
+    }
+
     public void moveToRightRedColumn() throws InterruptedException {
         if (cryptoboxKey.equals("left")){
             strafeToColumnPAltWithRange(82);
@@ -2170,6 +2175,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
 
     }
+
+   // public void moveToColumn()
 
 
     public void turnl180() throws InterruptedException{

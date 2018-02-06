@@ -10,14 +10,20 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class LM3BlueRightAuto extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        setAlliance('b');
-        initialize();
-        waitForStart();
-        scanImage();
-        lowerJewel();
-        knockJewel();
-        sleep(500);
-        strafeToBlueColumnTurn();
-        executeEndActions();
+        public void runOpMode() throws InterruptedException {
+            setAlliance('b');
+            initialize();
+            waitForStart();
+            scanImage();
+            lowerJewel();
+            knockJewel();
+            //moveBackwardPID(500,0.0013, 0.0000007, 0.5);
+            moveBackward(0.00);
+            pidTurnLeft(90);
+            sleep(650);
+            // sleep(735);
+            setZero();
+            sleep(200);
+            scoreGlyphB();
     }
 }
