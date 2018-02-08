@@ -5,14 +5,19 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 /**
  * Created by raymo on 11/16/2017.
  */
-//@Autonomous
+@Autonomous
 public class IntakeTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        waitForStart();
         initialize();
-        lowerLift(500);
-        sleep(1000);
-        raiseLift(500);
+        waitForStart();
+        //pidTurnLeft(90 + getGyroYaw());
+
+        //moveToRightColumnRTurn(40);
+        moveToRightColumnRTurn(59);
+        sleep(3000);
+        moveToRightColumnRTurn(42);
+        sleep(3000);
+        moveToRightColumnRTurn(26);
     }
 }
