@@ -1422,6 +1422,16 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public void moveToRightBlueRTurnColumn() throws InterruptedException{
+        if (cryptoboxKey.equals("left")) {
+            moveToRightColumnBTurn(26);
+        } else if (cryptoboxKey.equals("center")) {
+            moveToRightColumnBTurn(42);
+        } else {
+            moveToRightColumnBTurn(57);
+        }
+    }
+
     //Color Sensor + Hitting the Jewel
 
     /*
@@ -2059,6 +2069,46 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
+    public void strafeToColumnPAltWithRangeBTurn(double distance) throws InterruptedException{
+        int startenc = getAvgEncoder();
+        while ((getRangeSensorRightReading() < distance ) && (opModeIsActive())){
+            //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrection(-90),((0.35 )));
+        }
+        int stopenc = getAvgEncoder();
+        setZero();
+        telemetry.addData("Encoder Displament", stopenc - startenc);
+        telemetry.update();
+        sleep(3000);
+        if (getRangeSensorRightReading() > distance + 6){
+            telemetry.addData("correction", "active");
+            telemetry.update();
+            while (getRangeSensorRightReading() > distance){
+                setPower(0,getStrafeCorrection(-90),(-(0.35)));
+            }
+        }
+    }
+
+    public void strafeToColumnPAltGreaterWithRangeBTurn(double distance) throws InterruptedException{
+        int startenc = getAvgEncoder();
+        while ((getRangeSensorRightReading() > distance ) && (opModeIsActive())){
+            //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrection(-90),((-0.35 )));
+        }
+        int stopenc = getAvgEncoder();
+        setZero();
+        telemetry.addData("Encoder Displament", stopenc - startenc);
+        telemetry.update();
+        sleep(3000);
+        if (getRangeSensorRightReading() > distance + 6){
+            telemetry.addData("correction", "active");
+            telemetry.update();
+            while (getRangeSensorRightReading() > distance){
+                setPower(0,getStrafeCorrection(-90),((0.35)));
+            }
+        }
+    }
+
     public void strafeToColumnPAltGreaterWithRange(double distance) throws InterruptedException{
         int startenc = getAvgEncoder();
         while ((getRangeSensorLeftReading() > distance ) && (opModeIsActive())){
@@ -2308,12 +2358,12 @@ public abstract class AutoOpMode extends LinearOpMode {
         }
     }
 
-    public void moveToRightColumnRBTurn(double goal) throws InterruptedException {
+    public void moveToRightColumnBTurn(double goal) throws InterruptedException {
         if (getRangeSensorRightReading() < goal){
-            strafeToColumnPAltWithRange(goal);
+            strafeToColumnPAltWithRangeBTurn(goal);
         }
         else if (getRangeSensorRightReading() > goal){
-            strafeToColumnPAltWithRange(goal);
+            strafeToColumnPAltGreaterWithRangeBTurn(goal);
         }
     }
 
