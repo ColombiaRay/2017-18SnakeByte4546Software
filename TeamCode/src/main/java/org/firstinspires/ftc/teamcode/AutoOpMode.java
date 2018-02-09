@@ -567,7 +567,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Difference", difference);
         telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
         telemetry.update();
-        return Range.clip(-difference * 0.25/20, -0.25, 0.25);
+        return Range.clip(-difference * 0.25/10, -0.25, 0.25);
     }
 
     public double getStrafeCorrectionSpec(double desiredAngle) throws InterruptedException {
@@ -1672,7 +1672,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         double blueData = 0;
         sleep(500);
         for (int i = 0; i < 30; i++) {
-            sleep(50);
+            sleep(20);
             if (i < 8) {
                 redData = (double) (colorFront.red()) / 8;
                 red += redData;
@@ -1979,7 +1979,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void strafeToColumnPWithRange(double distance) throws InterruptedException{
         int startenc = getAvgEncoder();
-        while (getRangeSensorRightReading() < distance && opModeIsActive()){
+        while (getRangeSensorRightReading() < distance && opModeIsActive() && (getAvgEncoder() - startenc < 1720)){
             telemetry.addData("Encoder",getAvgEncoder());
             setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
         }
@@ -2033,18 +2033,18 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrectionSpec(0),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrectionSpec(180),(0.30 + 0.25*(distance - getRangeSensorLeftReading())/distance));
         }
         int stopenc = getAvgEncoder();
+        setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
         sleep(3000);
-        setZero();
         if (getRangeSensorLeftReading() > distance + 6){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorLeftReading() > distance && opModeIsActive()){
-                setPower(0,getStrafeCorrection(180),(-(0.30 + (distance - getRangeSensorLeftReading())/distance)));
+                setPower(0,getStrafeCorrection(180),(-(0.30 + 0.25*(distance - getRangeSensorLeftReading())/distance)));
             }
         }
     }
@@ -2073,7 +2073,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorRightReading() < distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrection(-90),((0.35 )));
+            setPower(0,getStrafeCorrection(-90),((-0.35 )));
         }
         int stopenc = getAvgEncoder();
         setZero();
@@ -2093,17 +2093,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorRightReading() > distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrection(-90),((-0.35 )));
+            setPower(0,getStrafeCorrection(-90),((0.35 )));
         }
         int stopenc = getAvgEncoder();
         setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
         sleep(3000);
-        if (getRangeSensorRightReading() > distance + 6){
+        if (getRangeSensorRightReading() < distance + 6){
             telemetry.addData("correction", "active");
             telemetry.update();
-            while (getRangeSensorRightReading() > distance){
+            while (getRangeSensorRightReading() < distance){
                 setPower(0,getStrafeCorrection(-90),((0.35)));
             }
         }
@@ -2255,7 +2255,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         moveStrafeRightMaxTime(0.6, 700, 1000);
     }
     public void turn180() throws InterruptedException{
-        pidTurnRight(90);
+        pidTurnRight(90 - getGyroYaw());
         pidTurnRight(90);
     }
 
