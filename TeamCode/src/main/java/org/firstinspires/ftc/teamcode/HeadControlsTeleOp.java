@@ -196,7 +196,6 @@ public class HeadControlsTeleOp extends OpMode {
 
     //Activates when start, not init is pressed. Use it for setting servos to initial positions
     public void start() {
-        relicArm.setPosition(1);
         timer.reset();
     }
 
@@ -209,14 +208,13 @@ public class HeadControlsTeleOp extends OpMode {
         setPower();
         toggleHalfSpeed();
         useJewel();
-        findTrueGyro();
         useRelicArm();
         raiseClamps();
         enableRelicHalfSpeed();
         tunnel.toggleIntakeTank(gamepad2.left_stick_y, gamepad2.right_stick_y);
         //tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
         //alterRelicMotion();
-        //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
+        //tunnel.manipulateLift(gamepad2.right_stick_y); //
         //manipLift();
         extendRelic();
         reportTelemetry();
@@ -282,10 +280,7 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
-    public double getGyroYaw(){
-        Orientation angles = imu.getAngularOrientation();
-        return (angles.firstAngle * -1);
-    }
+
 
     public void toggleHalfSpeed() {
         if(System.currentTimeMillis() - halfSpeedTime > DELAY_TIME_MS) {
@@ -468,11 +463,11 @@ public class HeadControlsTeleOp extends OpMode {
     public void useGlyphClamps() {
         if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
             if (clampOpen) {
-                leftGlyphClamp.setPosition(0.93);
-                rightGlyphClamp.setPosition(0.15);
+                leftGlyphClamp.setPosition(0.83);
+                rightGlyphClamp.setPosition(0.17);
                 clampOpen = false;
             } else if (!clampOpen) {
-                leftGlyphClamp.setPosition(0.68);
+                leftGlyphClamp.setPosition(0.60);
                 rightGlyphClamp.setPosition(0.40);
                 clampOpen = true;
             }
@@ -511,16 +506,7 @@ public class HeadControlsTeleOp extends OpMode {
         relic.setPosition(0);
     }
 
-    public void findTrueGyro(){
-        prevGyro = currentGyro;
-        currentGyro = getGyroYaw();
-        if ((prevGyro < 0) && (currentGyro > 0)){
-            revolutions ++;
-        }
-        else if ((prevGyro > 0) && (currentGyro < 0)){
-            revolutions--;
-        }
-    }
+
 
 
     /* Methods for original clamp bot (obsolete)

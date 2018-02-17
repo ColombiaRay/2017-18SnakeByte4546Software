@@ -6,15 +6,17 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by raymo on 12/29/2017.
  */
 
-@Autonomous (name = "[R]RedAutoRight")
-public class LM3RedAutoRight extends AutoOpMode {
+@Autonomous (name = "WRONGJEWEL!RedRight")
+public class RPRedRight extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         setAlliance('r');
         initialize();
+        //Sets to incorrect alliance to hit wrong jewel
+        setAlliance('b');
         waitForStart();
         scanImage();
-       // scanImage();
+        // scanImage();
         lowerJewel();
         knockJewel();
         sleep(500);

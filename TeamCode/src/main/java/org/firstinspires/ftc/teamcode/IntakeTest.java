@@ -14,10 +14,6 @@ public class IntakeTest extends AutoOpMode {
         //pidTurnLeft(90 + getGyroYaw());
 
         //moveToRightColumnRTurn(40);
-        moveToRightColumnRTurn(59);
-        sleep(3000);
-        moveToRightColumnRTurn(42);
-        sleep(3000);
-        moveToRightColumnRTurn(26);
+        moveForwardSt(0.3, 7900,-90);
     }
 }

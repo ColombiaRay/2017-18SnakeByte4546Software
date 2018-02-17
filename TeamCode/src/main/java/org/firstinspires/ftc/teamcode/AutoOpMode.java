@@ -76,6 +76,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     private double Yaw;
     private double integral;
     private double angleIntegral;
+    private DcMotor leftCLift;
+    private DcMotor rightCLift;
     private double angleDerivative;
     private double error;
     private double previousError;
@@ -115,6 +117,8 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     ElapsedTime timer;
     private double heighestRead;
+    private double red = 0;
+    private double blue = 0;
     //private Servo gateServo;
 
 
@@ -165,6 +169,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         jewelHitter.setDirection(Servo.Direction.REVERSE);
 
         jewelKnocker = hardwareMap.servo.get("jewelknocker");
+        leftCLift = hardwareMap.dcMotor.get("LeftClampLift");
+        rightCLift = hardwareMap.dcMotor.get("RightClampLift");
 
         //gate = hardwareMap.servo.get("gate");
 
@@ -187,7 +193,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         reportInitialized();
         previousAngle = 0;
         imu.startAccelerationIntegration(new Position(), new Velocity(), 10);
-        relicArm.setPosition(1);
         ElapsedTime timer = new ElapsedTime();
     }
 
@@ -356,8 +361,18 @@ public abstract class AutoOpMode extends LinearOpMode {
         */
     }
 
+    public void enableRPMode() throws InterruptedException{
+        if (alliance == 98){
+            alliance = 'r';
+        }
+        else if (alliance == 114){
+            alliance = 'b';
+        }
+    }
 
-    public int getAvgEncoder() throws InterruptedException {
+
+    public int
+    getAvgEncoder() throws InterruptedException {
         return (Math.abs(FL.getCurrentPosition()) + Math.abs(FR.getCurrentPosition())) / 2;
     }
 
@@ -381,6 +396,21 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startPos = getAvgEncoder();
         while ((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
             moveForward(velocity);
+            telemetry.addData("distance", getAvgEncoder() - startPos);
+            telemetry.update();
+            idle();
+        }
+        setZero();
+        if (Math.abs(getAvgEncoder() - startPos) > distance + 50) {
+            telemetry.addData("overshoot", "fix");
+            telemetry.update();
+        }
+    }
+
+    public void moveForwardSt(double velocity, int distance, double angle) throws InterruptedException {
+        int startPos = getAvgEncoder();
+        while ((Math.abs(getAvgEncoder() - startPos) < distance) && (opModeIsActive())) {
+            setPower(velocity, getLinearCorrection(angle),0);
             telemetry.addData("distance", getAvgEncoder() - startPos);
             telemetry.update();
             idle();
@@ -567,7 +597,16 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Difference", difference);
         telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
         telemetry.update();
-        return Range.clip(-difference * 0.25/10, -0.25, 0.25);
+        return Range.clip(-difference * 0.25/20, -0.25, 0.25);
+    }
+
+    public double getStrafeCorrectionAlt(double desiredAngle) throws InterruptedException {
+        //+ means correction is turning right, - is turning left
+        double difference = getGyroYaw() - desiredAngle;
+        telemetry.addData("Difference", difference);
+        telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
+        telemetry.update();
+        return Range.clip(difference * 0.25/20, -0.25, 0.25);
     }
 
     public double getStrafeCorrectionSpec(double desiredAngle) throws InterruptedException {
@@ -576,8 +615,18 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.addData("Difference", difference);
         telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
         telemetry.update();
-        return Range.clip(-difference * 0.25/10, -0.25, 0.25);
+        return Range.clip(-difference * 0.25/20, -0.25, 0.25);
     }
+
+    public double getLinearCorrection(double desiredAngle) throws InterruptedException {
+        //+ means correction is turning right, - is turning left
+        double difference = getGyroYaw() - desiredAngle;
+        telemetry.addData("Difference", difference);
+        telemetry.addData("Power", Range.clip(difference * 0.25/5, -0.25, 0.25));
+        telemetry.update();
+        return Range.clip(-difference * 0.25/4, -0.25, 0.25);
+    }
+
 
     /*
     public void moveToDropBlock(String place) throws InterruptedException {
@@ -1414,21 +1463,28 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveToRightRedRTurnColumn() throws InterruptedException{
         if (cryptoboxKey.equals("left")) {
-            moveToRightColumnRTurn(57);
-        } else if (cryptoboxKey.equals("center")) {
-            moveToRightColumnRTurn(42);
-        } else {
+            moveToRightColumnRTurn(55);
+        } else if (cryptoboxKey.equals("right")) {
             moveToRightColumnRTurn(26);
+        } else {
+            moveToRightColumnRTurn(40.5);
         }
     }
 
     public void moveToRightBlueRTurnColumn() throws InterruptedException{
         if (cryptoboxKey.equals("left")) {
-            moveToRightColumnBTurn(26);
-        } else if (cryptoboxKey.equals("center")) {
             moveToRightColumnBTurn(42);
+            int startEnc = getAvgEncoder();
+            while (Math.abs(getAvgEncoder() - startEnc) < 365){
+                //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+                telemetry.addData(getAvgEncoder() - startEnc + "", "gg");
+                setPower(0.05,getStrafeCorrection(-90),((0.45 )));
+            }
+            setZero();
+        } else if (cryptoboxKey.equals("center")) {
+            moveToRightColumnBTurn(40);
         } else {
-            moveToRightColumnBTurn(57);
+            moveToRightColumnBTurn(58.5);
         }
     }
 
@@ -1601,11 +1657,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         double kP = 0.23/90;
         setStartAngle();
         setInitialAngError(angle);
-        while ((opModeIsActive()) && (angError > 0.25)){
+        while ((opModeIsActive()) && (angError > 1)){
             findAngDisplacement();
             findAngError(angle);
             telemetry.update();
-            turn(kP * angError + 0.23);
+            turn(kP * angError + 0.25);
         }
         setZero();
     }
@@ -1614,11 +1670,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         double kP = 0.25/90;
         setStartAngle();
         setInitialAngError(angle);
-        while ((opModeIsActive()) && (angError > 0.3)){
+        while ((opModeIsActive()) && (angError > 1)){
             findAngDisplacement();
             findAngError(angle);
             telemetry.update();
-            turn(-(kP * angError + 0.18));
+            turn(-(kP * angError + 0.25));
         }
         setZero();
     }
@@ -1979,19 +2035,27 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void strafeToColumnPWithRange(double distance) throws InterruptedException{
         int startenc = getAvgEncoder();
-        while (getRangeSensorRightReading() < distance && opModeIsActive() && (getAvgEncoder() - startenc < 1720)){
-            telemetry.addData("Encoder",getAvgEncoder());
-            setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
+        while (getRangeSensorRightReading() < distance && opModeIsActive() && (getAvgEncoder() - startenc < 850)){
+            telemetry.addData("Encoder",getAvgEncoder() - startenc);
+            setPower(0,getStrafeCorrection(0),-(0.4));
         }
         int finen = getAvgEncoder();
         telemetry.addData("blah blah", finen - startenc);
         setZero();
-        sleep(500);
         if (getRangeSensorRightReading() > distance){
             while (getRangeSensorRightReading() > distance && opModeIsActive()){
                 telemetry.addData("correction", "active");
                 setPower(0,getStrafeCorrection(0),(0.4));
             }
+        }
+    }
+
+    public void straightenAfterFall() throws InterruptedException{
+        if (getGyroYaw() > 1){
+            pidTurnLeft(Math.abs(getGyroYaw()));
+        }
+        else if (getGyroYaw() < -1){
+            pidTurnRight(Math.abs(getGyroYaw()));
         }
     }
 
@@ -2002,7 +2066,6 @@ public abstract class AutoOpMode extends LinearOpMode {
             setPower(0,getStrafeCorrection(0),-(0.35 + 0.4*Math.abs((distance - getRangeSensorRightReading())/distance)));
         }
         setZero();
-        sleep(500);
         if (getRangeSensorRightReading() > distance){
             while (getRangeSensorRightReading() > distance){
                 telemetry.addData("correction", "active");
@@ -2033,18 +2096,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrectionSpec(180),(0.30 + 0.25*(distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrectionSpec(180),(0.3 + 0.25*(distance - getRangeSensorLeftReading())/distance));
         }
         int stopenc = getAvgEncoder();
         setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
-        sleep(3000);
         if (getRangeSensorLeftReading() > distance + 6){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorLeftReading() > distance && opModeIsActive()){
-                setPower(0,getStrafeCorrection(180),(-(0.30 + 0.25*(distance - getRangeSensorLeftReading())/distance)));
+                setPower(0,getStrafeCorrectionSpec(180),(-(0.3 + 0.25*(distance - getRangeSensorLeftReading())/distance)));
             }
         }
     }
@@ -2053,18 +2115,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrection(-90),((0.35 )));
+            setPower(0,getStrafeCorrection(-90),((0.45 )));
         }
         int stopenc = getAvgEncoder();
         setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
-        sleep(3000);
-        if (getRangeSensorLeftReading() > distance + 6){
+        if (getRangeSensorLeftReading() > distance){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorLeftReading() > distance){
-                setPower(0,getStrafeCorrection(-90),(-(0.35)));
+                setPower(0,getStrafeCorrection(-90),(-(0.45)));
             }
         }
     }
@@ -2073,18 +2134,19 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorRightReading() < distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrection(-90),((-0.35 )));
+            setPower(0,getStrafeCorrection(-90),((-0.45 )));
+            telemetry.addData("Current enc", getAvgEncoder() - startenc);
+            telemetry.update();
         }
         int stopenc = getAvgEncoder();
         setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
-        sleep(3000);
-        if (getRangeSensorRightReading() > distance + 6){
+        if (getRangeSensorRightReading() > distance){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorRightReading() > distance){
-                setPower(0,getStrafeCorrection(-90),(-(0.35)));
+                setPower(0,getStrafeCorrection(-90),((0.45)));
             }
         }
     }
@@ -2093,18 +2155,17 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startenc = getAvgEncoder();
         while ((getRangeSensorRightReading() > distance ) && (opModeIsActive())){
             //setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
-            setPower(0,getStrafeCorrection(-90),((0.35 )));
+            setPower(0,getStrafeCorrection(-90),((0.45 )));
         }
         int stopenc = getAvgEncoder();
         setZero();
         telemetry.addData("Encoder Displament", stopenc - startenc);
         telemetry.update();
-        sleep(3000);
-        if (getRangeSensorRightReading() < distance + 6){
+        if (getRangeSensorRightReading() < distance){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorRightReading() < distance){
-                setPower(0,getStrafeCorrection(-90),((0.35)));
+                setPower(0,getStrafeCorrection(-90),(-(0.45)));
             }
         }
     }
@@ -2132,7 +2193,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     public void strafeToColumnPAltGreaterWithRangeRTurn(double distance) throws InterruptedException{
         int startenc = getAvgEncoder();
         while ((getRangeSensorLeftReading() > distance ) && (opModeIsActive())){
-            setPower(0,getStrafeCorrection(-90),-((0.35 )));
+            setPower(0,getStrafeCorrection(-90),-((0.45 )));
             //setPower(0,getStrafeCorrectionSpec(180),-(0.30 + (distance - getRangeSensorLeftReading())/distance));
         }
         int stopenc = getAvgEncoder();
@@ -2140,17 +2201,11 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
         setZero();
         sleep(200);
-        if (getRangeSensorLeftReading() > distance + 6){
+        if (getRangeSensorLeftReading() > distance){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorLeftReading() > distance){
-                setPower(0,getStrafeCorrection(-
-
-
-
-
-
-                        90),((0.35 )));
+                setPower(0,getStrafeCorrection(-90),((0.45 )));
             }
         }
     }
@@ -2159,14 +2214,14 @@ public abstract class AutoOpMode extends LinearOpMode {
         int startEnc = getAvgEncoder();
         int overshootEnc = 1800;
         while ((getRangeSensorLeftReading() < distance ) && (opModeIsActive()) && (getAvgEncoder() - startEnc < overshootEnc)){
-            setPower(0,getStrafeCorrectionSpec(180),(0.30 + (distance - getRangeSensorLeftReading())/distance));
+            setPower(0,getStrafeCorrectionSpec(180),(0.5));
         }
         setZero();
-        if (getRangeSensorLeftReading() > distance + 6){
+        if (getRangeSensorLeftReading() > distance){
             telemetry.addData("correction", "active");
             telemetry.update();
             while (getRangeSensorLeftReading() > distance){
-                setPower(0,getStrafeCorrection(180),(-(0.30 + (distance - getRangeSensorLeftReading())/distance)));
+                setPower(0,getStrafeCorrectionSpec(180),(-(0.5)));
             }
         }
     }
@@ -2233,7 +2288,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     //Drops the block, backs up, and strafes into the column
     public void shootAndStrafe() throws InterruptedException{
         moveBackward(0.3);
-        sleep(700);
+        sleep(1000);
         setZero();
         shootGlyph(2000);
         sleep(2000);
@@ -2255,7 +2310,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         moveStrafeRightMaxTime(0.6, 700, 1000);
     }
     public void turn180() throws InterruptedException{
-        pidTurnRight(90 - getGyroYaw());
+        pidTurnRight(90 + getGyroYaw());
         pidTurnRight(90);
     }
 
@@ -2283,27 +2338,27 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     public void moveToRightRedColumn() throws InterruptedException {
         if (cryptoboxKey.equals("left")){
-            strafeToColumnPAltWithRange(82);
+            strafeToColumnPAltWithRangeEncoder(82);
         }
         else if (cryptoboxKey.equals("center")){
-            strafeToColumnPAltWithRange(67.5);
+            strafeToColumnPAltWithRangeEncoder(67.5);
         }
         else{
-            strafeToColumnPAltWithRange(47);
+            strafeToColumnPAltWithRangeEncoder(47);
         }
     }
 
     public void moveToRightBlueColumn() throws InterruptedException {
         if (cryptoboxKey.equals("right")){
-            strafeToColumnPWithRange(80);
+            strafeToColumnPWithRange(82.5);
             //80
         }
         else if (cryptoboxKey.equals("center")){
-            strafeToColumnPWithRange(64);
+            strafeToColumnPWithRange(67.5);
             //63
         }
         else{
-            strafeToColumnPWithRange(45);
+            strafeToColumnPWithRange(47);
         }
 
     }
@@ -2366,6 +2421,102 @@ public abstract class AutoOpMode extends LinearOpMode {
             strafeToColumnPAltGreaterWithRangeBTurn(goal);
         }
     }
+
+    public void quickVufAndJewel() throws InterruptedException{
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        //Key
+        parameters.vuforiaLicenseKey = "AQ1iIdT/////AAAAGZ0U6OKRfU8tpKf9LKl/7DM85y3Wp791rb6q3WwHfYaY53vqKSjAO8wU2FgulWnDt6gLqu9hB33z1reejMz/NyfL8u11QZlMIbimmnP/v4hvoXZWu0p62V9eMG3R2PQ3Z7rZ0qK8HwsQYE/0jmBhTy0D17M4fWpNW64QQnMJqFxq/N1BXm32PEInYDHBYs7WUrHL5oa9xeSSurxUq/TqDpeJwQM+1/GYppdAqzbcM1gi3yzU7JDLdNtOZ6+lbi5uXlU++GnFvQaEXL9uVcnTwMEgBhBng6oOEVoEDXiSUBuZHuMRGZmHfVXSNE3m1UXWyEdPTlMRI5vfEwfsBHmQTmvYr/jJjng3+tBpu85Q1ivo";
+        //Use Front Camera
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate");
+        relicTrackables.activate();
+        boolean detected = false;
+        while ((!isStarted())){
+            RelicRecoveryVuMark vuMarkI = RelicRecoveryVuMark.from(relicTemplate);
+            if (vuMarkI != RelicRecoveryVuMark.UNKNOWN){
+                telemetry.addData("Vuforia Position", "Correct");
+            }
+            else{
+                telemetry.addData("Vuforia Position", "CHANGE");
+            }
+            telemetry.addData("Left Range", getRangeSensorLeftReading());
+            telemetry.addData("Right Range", getRangeSensorRightReading());
+            telemetry.update();
+        }
+        jewelKnocker.setPosition(0.55);
+        sleep(500);
+        lowerJewel();
+        jewelHitter.setPosition(0.9);
+        double startTime = System.currentTimeMillis();
+        while ((!detected) || System.currentTimeMillis() - startTime < 1000){
+            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    telemetry.addData("VuMark", "Left");
+                    telemetry.update();
+                    cryptoboxKey = "left";
+                    detected = true;
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    telemetry.addData("VuMark", "Center");
+                    telemetry.update();
+                    cryptoboxKey = "center";
+                    detected = true;
+                }
+                if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    telemetry.addData("VuMark", "Right");
+                    telemetry.update();
+                    cryptoboxKey = "right";
+                    detected = true;
+                }
+            }
+            gatherColorData();
+        }
+    }
+
+    public void gatherColorData() throws InterruptedException{
+        red += colorFront.red();
+        blue += colorFront.blue();
+    }
+
+    public void attemptMultiGlyph() throws InterruptedException{
+        moveForwardSt(0.3, 700,-90);
+        sleep(500);
+        closeTheClamps();
+        sleep(200);
+        raiseClampsTime(800);
+        sleep(400);
+        pidTurnRight(90);
+        pidTurnRight(90);
+        sleep(300);
+        moveForwardSt(0.3, 850, 90);
+        sleep(400);
+        openTheClamps();
+        moveBackward(0.4, 150);
+    }
+
+    public void raiseClampsTime(int ms) throws InterruptedException{
+        rightCLift.setPower(-0.7);
+        leftCLift.setPower(0.7);
+        sleep(ms);
+        rightCLift.setPower(0);
+        leftCLift.setPower(0);
+    }
+
+    public void closeTheClamps() throws InterruptedException{
+        leftGlyphClamp.setPosition(0.83);
+        rightGlyphClamp.setPosition(0.17);
+    }
+
+    public void openTheClamps() throws InterruptedException{
+        leftGlyphClamp.setPosition(0.60);
+        rightGlyphClamp.setPosition(0.40);
+    }
+
+
 
 
 //Gate on tunnel
