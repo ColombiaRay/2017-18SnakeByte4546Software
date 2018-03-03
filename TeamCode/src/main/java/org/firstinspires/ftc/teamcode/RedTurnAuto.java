@@ -14,7 +14,8 @@ public class RedTurnAuto extends AutoOpMode {
         setInitialAngle();
         waitForStart();
         //scanImage();
-        moveForwardPID(325,0.001, 0.0000007, 0.5);
-        turnRightPID(90, 0.003, 0.000003, 0.12);
+        while(opModeIsActive()){
+            setPower(0,getStrafeCorrection(0),0);
+        }
     }
 }

@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 
-@TeleOp(name = "TheStrafeCompensator", group = "TeleOp")
+//@TeleOp(name = "TheStrafeCompensator", group = "TeleOp")
 public class StrafeCompensatorTeleOp extends OpMode {
 
     boolean multiplier_1x  = true;

@@ -1,14 +1,18 @@
 
-        package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
-        import android.graphics.Color;
+import android.graphics.Color;
 
+        import com.qualcomm.hardware.bosch.BNO055IMU;
+        import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.CRServo;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.util.ElapsedTime;
+
+        import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
         /**
  * Created by raymo on 10/4/17.
@@ -21,6 +25,8 @@ public class HeadControlsTeleOp extends OpMode {
     private double leftMotion;
     private double leftRelicPosition;
     private double rightRelicPosition;
+    private double currentGyro;
+    private double prevGyro;
 
     private boolean halfSpeed;
 
@@ -29,6 +35,10 @@ public class HeadControlsTeleOp extends OpMode {
     private long currentTime;
     private long lastTime;
     private long closeTime;
+
+    private int revolutions;
+
+    private int halfSpeedTime;
 
     // Drive Train
     private DcMotor FL;
@@ -87,7 +97,9 @@ public class HeadControlsTeleOp extends OpMode {
     boolean clampOpen = true;
     long lastGlyphTime;
     private boolean firstRelicPos = true;
-
+    private BNO055IMU imu;
+    private double powerfactor = 1;
+    private double recentRPressTime;
     private double relicMoveTime;
     private int relicPos;
 
@@ -184,7 +196,6 @@ public class HeadControlsTeleOp extends OpMode {
 
     //Activates when start, not init is pressed. Use it for setting servos to initial positions
     public void start() {
-        relicArm.setPosition(1);
         timer.reset();
     }
 
@@ -199,14 +210,15 @@ public class HeadControlsTeleOp extends OpMode {
         useJewel();
         useRelicArm();
         raiseClamps();
-        useGlyphClamps();
+        enableRelicHalfSpeed();
         tunnel.toggleIntakeTank(gamepad2.left_stick_y, gamepad2.right_stick_y);
         //tunnel.toggleInTake(gamepad2.left_stick_y, gamepad2.right_trigger, gamepad2.left_trigger);
         //alterRelicMotion();
-        //tunnel.manipulateLift(gamepad2.right_stick_y); // TODO: add gamepad contols for these methods
+        //tunnel.manipulateLift(gamepad2.right_stick_y); //
         //manipLift();
         extendRelic();
         reportTelemetry();
+        useGlyphClamps();
     }
 
 
@@ -231,9 +243,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void useJewel() {
         if (gamepad1.dpad_left) {
-            jewelHitter.setPosition(0.55);
+            jewelHitter.setPosition(0.9);
         } else if (gamepad1.dpad_right) {
-            jewelHitter.setPosition(1);
+            jewelHitter.setPosition(0.45);
         }
     }
 
@@ -268,19 +280,32 @@ public class HeadControlsTeleOp extends OpMode {
         }
     }
 
+
+
     public void toggleHalfSpeed() {
-        if (halfSpeed) {
-            halfSpeed = false;
-            telemetry.addData("halfspeed", "disabled");
-        } else if (!halfSpeed) {
-            halfSpeed = true;
-            telemetry.addData("halfspeed", "enabled");
+        if(System.currentTimeMillis() - halfSpeedTime > DELAY_TIME_MS) {
+
+            if (gamepad1.x && halfSpeed) {
+                halfSpeed = false;
+                telemetry.addData("halfspeed", "disabled");
+                halfSpeedTime = (int)System.currentTimeMillis();
+            } else if (gamepad1.x && !halfSpeed) {
+                halfSpeed = true;
+                telemetry.addData("halfspeed", "enabled");
+                halfSpeedTime = (int)System.currentTimeMillis();
+            }
         }
     }
 
     public void reportTelemetry(){
         getRemainingTime();
         getMotorEncoders();
+        telemetry.addData("Angle", revolutions * 360 + currentGyro + "");
+        if (powerfactor == 1) {
+            telemetry.addData("Relic Half Speed", "Off");
+        } else if (powerfactor == 0.5){
+            telemetry.addData("Relic Half Speed", "On");
+        }
         telemetry.update();
     }
 
@@ -384,13 +409,26 @@ public class HeadControlsTeleOp extends OpMode {
     public void raiseClamps() {
         if (gamepad2.y) {
             rightCLift.setPower(0.7);
-            leftCLift.setPower(-0.3);
+            leftCLift.setPower(-0.7);
         } else if (gamepad2.a) {
             rightCLift.setPower(-0.7);
-            leftCLift.setPower(0.3);
+            leftCLift.setPower(0.7);
         } else {
             rightCLift.setPower(0);
             leftCLift.setPower(0);
+        }
+    }
+
+    public void enableRelicHalfSpeed(){
+        if (System.currentTimeMillis() - recentRPressTime > 150) {
+            if (gamepad2.dpad_left) {
+                if (powerfactor == 1) {
+                    powerfactor = 0.5;
+                } else if (powerfactor == 0.5){
+                    powerfactor = 1;
+                }
+            }
+            recentRPressTime = System.currentTimeMillis();
         }
     }
 
@@ -404,33 +442,33 @@ public class HeadControlsTeleOp extends OpMode {
 
 
     //Has some potential for balancing
-    public void brake() {
-        if (gamepad2.left_bumper) {
-            if (!braked) {
-                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                braked = true;
-            } else {
-                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                braked = false;
-            }
-        }
-    }
+//    public void brake() {
+//        if (gamepad2.left_bumper) {
+//            if (!braked) {
+//                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//                braked = true;
+//            } else {
+//                FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//                braked = false;
+//            }
+//        }
+//    }
 
     public void useGlyphClamps() {
         if ((gamepad2.dpad_right) && (System.currentTimeMillis() - lastGlyphTime > DELAY_TIME_MS)) {
             if (clampOpen) {
-                leftGlyphClamp.setPosition(0.07);
-                rightGlyphClamp.setPosition(0.83);
+                leftGlyphClamp.setPosition(0.83);
+                rightGlyphClamp.setPosition(0.17);
                 clampOpen = false;
             } else if (!clampOpen) {
-                leftGlyphClamp.setPosition(0.35);
-                rightGlyphClamp.setPosition(0.55);
+                leftGlyphClamp.setPosition(0.60);
+                rightGlyphClamp.setPosition(0.40);
                 clampOpen = true;
             }
             lastGlyphTime = System.currentTimeMillis();
@@ -439,9 +477,9 @@ public class HeadControlsTeleOp extends OpMode {
 
     public void extendRelic() {
         if (gamepad2.dpad_up) {
-            relicMotor.setPower(1);
+            relicMotor.setPower(powerfactor*1);
         } else if (gamepad2.dpad_down) {
-            relicMotor.setPower(-1);
+            relicMotor.setPower(-powerfactor*1);
         } else {
             relicMotor.setPower(0);
         }
