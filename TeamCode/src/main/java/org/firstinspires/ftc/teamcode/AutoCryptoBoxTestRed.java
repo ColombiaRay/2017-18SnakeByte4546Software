@@ -17,7 +17,6 @@ public class AutoCryptoBoxTestRed extends AutoOpMode {
         sleep(4000);
         //strafeToCorrectColumnRed();
 
-
         /*
 
         moveStrafe(-0.6, 300);

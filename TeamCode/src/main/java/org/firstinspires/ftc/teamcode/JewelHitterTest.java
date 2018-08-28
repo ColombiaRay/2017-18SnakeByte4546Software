@@ -11,7 +11,6 @@ public class JewelHitterTest extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        colorFront.enableLed(false);
         waitForStart();
         sleep(2000);
         jewelKnocker.setPosition(0.3);

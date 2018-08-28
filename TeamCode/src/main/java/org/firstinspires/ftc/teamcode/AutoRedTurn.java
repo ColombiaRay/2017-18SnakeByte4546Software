@@ -3,22 +3,23 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /**
- * Created by raymo on 12/29/2017.
+ * Created by raymo on 12/4/2017.
  */
 
-@Autonomous (name = "[LM3]RedAutoLeft")
-public class LM3RedAutoLeft extends AutoOpMode {
+//@Autonomous
+public class AutoRedTurn extends AutoOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        setAlliance('r');
         initialize();
+        setInitialAngle();
+        setAlliance('r');
         waitForStart();
-        scanImage();
+        //
+        //
+        //scanImage();
         lowerJewel();
         knockJewel();
         sleep(500);
-        strafeToRedColumnTurn();
-        unclampGlyph();
-        backUpFromGlyph();
+        //moveToCorrectColumnRed();
     }
 }

@@ -12,6 +12,6 @@ public class AutoEndMovementsTest extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
-        straighten();
+        moveBackward(0.4, 75);
     }
 }

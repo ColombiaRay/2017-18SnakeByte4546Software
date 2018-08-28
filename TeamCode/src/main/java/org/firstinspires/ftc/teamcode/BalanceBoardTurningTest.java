@@ -14,8 +14,8 @@ public class BalanceBoardTurningTest extends AutoOpMode {
     public void runOpMode() throws InterruptedException {
         initialize();
         waitForStart();
-        turn180();
-        sleep(300);
-        strafeToColumnPWithRange(82);
+        moveForwardPID(200,2.5);
+        sleep(500);
+        moveBackwardPID(200,2.5);
     }
 }
